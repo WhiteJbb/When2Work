@@ -1,22 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { generateTimeSlots, formatDateHeader, formatTimeLabel, slotId } from '../utils/timeUtils'
+import { useEffect, useRef, useCallback } from 'react'
+import { generateTimeSlots, formatDateHeader, slotId } from '../utils/timeUtils'
 import { useTheme } from '../context/ThemeContext'
 import { heatColor } from '../utils/timeUtils'
 
-/**
- * TimeGrid — 드래그로 시간 선택 또는 히트맵 표시
- *
- * Props:
- *  mode: 'select' | 'results'
- *  dates: string[]
- *  startHour: number
- *  endHour: number
- *  selected: Set<string>        (select 모드)
- *  onSelectionChange: (Set) =>  (select 모드)
- *  heatmap: { [slotId]: string[] }  (results 모드)
- *  totalParticipants: number        (results 모드)
- *  onCellHover: (slotId|null) =>    (results 모드)
- */
 export default function TimeGrid({
   mode = 'select',
   dates,
@@ -36,74 +22,50 @@ export default function TimeGrid({
   const isDragging = useRef(false)
   const dragMode = useRef('add')
   const gridRef = useRef(null)
+  const lastPosRef = useRef(null)
 
-  const lastPosRef = useRef(null) // { dateStr, rowIdx }
-
-  // 좌표 → { dateStr, rowIdx } 계산
   function getPosFromPoint(clientX, clientY) {
     if (!gridRef.current) return null
-
     const dateCols = [...gridRef.current.querySelectorAll('[data-date-col]')]
     let dateStr = null
     for (const col of dateCols) {
       const r = col.getBoundingClientRect()
-      if (clientX >= r.left && clientX < r.right) {
-        dateStr = col.dataset.dateCol
-        break
-      }
+      if (clientX >= r.left && clientX < r.right) { dateStr = col.dataset.dateCol; break }
     }
     if (!dateStr) return null
-
-    // 모든 셀을 순회해서 y 좌표가 속하는 셀 찾기
     const cells = [...gridRef.current.querySelectorAll(`[data-date-col="${dateStr}"] [data-cell-id]`)]
     for (let i = 0; i < cells.length; i++) {
       const r = cells[i].getBoundingClientRect()
-      if (clientY >= r.top && clientY < r.bottom) {
-        return { dateStr, rowIdx: i }
-      }
+      if (clientY >= r.top && clientY < r.bottom) return { dateStr, rowIdx: i }
     }
-    // 그리드 위/아래 경계 클램핑
     if (cells.length === 0) return null
     const firstRect = cells[0].getBoundingClientRect()
     const lastRect = cells[cells.length - 1].getBoundingClientRect()
     if (clientY < firstRect.top) return { dateStr, rowIdx: 0 }
     if (clientY >= lastRect.bottom) return { dateStr, rowIdx: cells.length - 1 }
-
     return null
   }
 
-  // 이전 위치 → 현재 위치 사이 모든 셀에 드래그 모드 적용 (보간)
   function applyTo(clientX, clientY) {
     const pos = getPosFromPoint(clientX, clientY)
     if (!pos) return
-
     const prev = lastPosRef.current
     const ids = []
-
     if (prev?.dateStr === pos.dateStr) {
-      // 같은 열: 이전 행과 현재 행 사이 전부 채움
       const minRow = Math.min(prev.rowIdx, pos.rowIdx)
       const maxRow = Math.max(prev.rowIdx, pos.rowIdx)
-      for (let r = minRow; r <= maxRow; r++) {
-        ids.push(slotId(pos.dateStr, timeSlots[r]))
-      }
+      for (let r = minRow; r <= maxRow; r++) ids.push(slotId(pos.dateStr, timeSlots[r]))
     } else {
       ids.push(slotId(pos.dateStr, timeSlots[pos.rowIdx]))
     }
-
     onSelectionChange(prev => {
       const next = new Set(prev)
-      for (const id of ids) {
-        if (dragMode.current === 'add') next.add(id)
-        else next.delete(id)
-      }
+      for (const id of ids) dragMode.current === 'add' ? next.add(id) : next.delete(id)
       return next
     })
-
     lastPosRef.current = pos
   }
 
-  // 마우스 이벤트
   const handleMouseDown = useCallback((id) => (e) => {
     if (mode !== 'select') return
     e.preventDefault()
@@ -113,8 +75,7 @@ export default function TimeGrid({
     lastPosRef.current = { dateStr, rowIdx: timeSlots.indexOf(time) }
     onSelectionChange(prev => {
       const next = new Set(prev)
-      if (dragMode.current === 'add') next.add(id)
-      else next.delete(id)
+      dragMode.current === 'add' ? next.add(id) : next.delete(id)
       return next
     })
   }, [mode, selected, onSelectionChange, timeSlots])
@@ -124,7 +85,6 @@ export default function TimeGrid({
     applyTo(e.clientX, e.clientY)
   }, [mode])
 
-  // 터치 이벤트
   const handleTouchStart = useCallback((id) => (e) => {
     if (mode !== 'select') return
     e.preventDefault()
@@ -134,8 +94,7 @@ export default function TimeGrid({
     lastPosRef.current = { dateStr, rowIdx: timeSlots.indexOf(time) }
     onSelectionChange(prev => {
       const next = new Set(prev)
-      if (dragMode.current === 'add') next.add(id)
-      else next.delete(id)
+      dragMode.current === 'add' ? next.add(id) : next.delete(id)
       return next
     })
   }, [mode, selected, onSelectionChange, timeSlots])
@@ -157,60 +116,68 @@ export default function TimeGrid({
     }
   }, [])
 
-  const CELL_H = 32 // px per 30-min slot (가독성 향상을 위해 증가)
-
-  // 시간 슬롯을 1시간 단위 그룹으로 묶기
-  const hourGroups = []
-  for (let i = 0; i < timeSlots.length; i += 2) {
-    hourGroups.push({
-      label: timeSlots[i],           // "09:00"
-      slots: timeSlots.slice(i, i + 2), // [":00", ":30"]
-      hourIndex: i / 2,
-    })
-  }
+  const CELL_H = 32
 
   function getCellStyle(date, time) {
     const id = slotId(date, time)
     if (mode === 'select') {
-      return selected.has(id) ? { backgroundColor: '#6366f1' } : {}
+      if (selected.has(id)) {
+        return {
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.85), rgba(79,70,229,0.85))',
+          boxShadow: isDark ? '0 0 8px rgba(99,102,241,0.5)' : 'none',
+        }
+      }
+      return {}
     }
     const names = heatmap[id] || []
     const ratio = totalParticipants > 0 ? names.length / totalParticipants : 0
     return { backgroundColor: heatColor(ratio, isDark) }
   }
 
-  function getCellHoverClass(date, time) {
-    if (mode !== 'select') return ''
-    const id = slotId(date, time)
-    return selected.has(id)
-      ? 'hover:brightness-110'
-      : 'hover:bg-slate-100 dark:hover:bg-slate-700/50'
-  }
-
-  function getCellClass(date, time, isHalfHour, hourIndex) {
-    const id = slotId(date, time)
-    const cursor = mode === 'select' ? 'cursor-crosshair' : 'cursor-default'
-    // select 모드에서만 터치 방지, results 모드에서는 스크롤 허용
-    const touchAction = mode === 'select' ? 'select-none-touch' : ''
-    const base = `w-full transition-all duration-100 box-border ${touchAction}`
-    // :00 셀: 하단에 점선 구분선, :30 셀: 하단 없음 (그룹 경계는 hourGroup border로)
-    const divider = !isHalfHour
-      ? 'border-b border-dashed border-slate-300 dark:border-slate-600/70'
-      : ''
-
-    if (mode === 'select') {
-      const isSelected = selected.has(id)
-      const bgBase = hourIndex % 2 === 0
-        ? 'bg-white dark:bg-slate-900'
-        : 'bg-slate-50/80 dark:bg-slate-800/50'
-      const hover = getCellHoverClass(date, time)
-      return `${base} ${cursor} ${divider} ${isSelected ? 'shadow-inner' : bgBase} ${hover}`
+  function getCellBg(hourIndex) {
+    if (isDark) {
+      return hourIndex % 2 === 0
+        ? 'rgba(255,255,255,0.02)'
+        : 'rgba(255,255,255,0.04)'
     }
-    return `${base} ${cursor} ${divider}`
+    return hourIndex % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.04)'
   }
+
+  const headerStyle = isDark ? {
+    background: 'rgba(8,8,21,0.9)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    borderBottom: '2px solid rgba(99,102,241,0.2)',
+  } : {
+    background: 'rgba(248,250,255,0.9)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    borderBottom: '2px solid rgba(99,102,241,0.15)',
+  }
+
+  const timeLabelColStyle = isDark ? {
+    background: 'rgba(255,255,255,0.02)',
+    borderRight: '2px solid rgba(255,255,255,0.06)',
+  } : {
+    background: 'rgba(0,0,0,0.02)',
+    borderRight: '2px solid rgba(0,0,0,0.06)',
+  }
+
+  const hourBorderStyle = isDark
+    ? '2px solid rgba(255,255,255,0.06)'
+    : '2px solid rgba(0,0,0,0.06)'
+
+  const halfBorderStyle = isDark
+    ? '1px dashed rgba(255,255,255,0.05)'
+    : '1px dashed rgba(0,0,0,0.06)'
 
   return (
-    <div className="overflow-auto rounded-xl border border-slate-200 dark:border-slate-800">
+    <div className="overflow-auto rounded-xl"
+      style={{
+        border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(99,102,241,0.15)',
+        boxShadow: isDark ? '0 4px 32px rgba(0,0,0,0.4)' : '0 4px 16px rgba(99,102,241,0.08)',
+      }}
+    >
       <div
         ref={gridRef}
         className="relative"
@@ -219,44 +186,49 @@ export default function TimeGrid({
         style={{ minWidth: `${dates.length * 64 + 70}px` }}
       >
         {/* ── 헤더: 날짜 ── */}
-        <div className="flex sticky top-0 z-10 bg-white dark:bg-slate-900 border-b-2 border-slate-300 dark:border-slate-700 shadow-sm">
+        <div className="flex sticky top-0 z-10 shadow-sm" style={headerStyle}>
           <div className="w-[70px] flex-shrink-0" />
           {dates.map(d => {
             const { weekday, month, day, isWeekend } = formatDateHeader(d)
             return (
               <div
                 key={d}
-                className={`flex-1 min-w-[64px] text-center py-3 border-l border-slate-200 dark:border-slate-800
-                  ${isWeekend ? 'text-rose-600 dark:text-rose-400 font-semibold' : 'text-slate-700 dark:text-slate-300'}`}
+                className="flex-1 min-w-[64px] text-center py-3"
+                style={{
+                  borderLeft: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
+                  color: isWeekend
+                    ? '#fb7185'
+                    : isDark ? '#cbd5e1' : '#475569',
+                }}
               >
                 <p className="text-sm font-bold">{weekday}</p>
-                <p className="text-xs opacity-70 mt-0.5">{month}/{day}</p>
+                <p className="text-xs mt-0.5 opacity-60">{month}/{day}</p>
               </div>
             )
           })}
         </div>
 
-        {/* ── 그리드 바디: 시간 그룹 단위 ── */}
+        {/* ── 그리드 바디 ── */}
         <div className="flex">
 
           {/* 시간 라벨 열 */}
-          <div className="w-[70px] flex-shrink-0 bg-slate-50/50 dark:bg-slate-900/50 border-r-2 border-slate-300 dark:border-slate-700">
+          <div className="w-[70px] flex-shrink-0" style={timeLabelColStyle}>
             {timeSlots.map((time, idx) => {
               const isHourStart = idx % 2 === 0
-              const hourLabel = isHourStart ? time : null
-              const showTopBorder = idx > 0 && isHourStart
-              
               return (
                 <div
                   key={time}
-                  className={`relative ${showTopBorder ? 'border-t-2 border-slate-300 dark:border-slate-600' : ''}`}
-                  style={{ height: `${CELL_H}px` }}
+                  className="relative"
+                  style={{
+                    height: `${CELL_H}px`,
+                    borderTop: idx > 0 && isHourStart ? hourBorderStyle : undefined,
+                  }}
                 >
-                  {hourLabel && (
-                    <span className="absolute top-1 right-3 text-[13px] font-bold
-                                     text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900
-                                     px-1.5 py-0.5 leading-none whitespace-nowrap rounded">
-                      {hourLabel}
+                  {isHourStart && (
+                    <span className="absolute top-1 right-3 text-[12px] font-semibold leading-none whitespace-nowrap px-1 py-0.5 rounded"
+                      style={{ color: isDark ? '#64748b' : '#94a3b8' }}
+                    >
+                      {time}
                     </span>
                   )}
                 </div>
@@ -269,21 +241,30 @@ export default function TimeGrid({
             <div
               key={date}
               data-date-col={date}
-              className="flex-1 min-w-[64px] border-l border-slate-200 dark:border-slate-800"
+              className="flex-1 min-w-[64px]"
+              style={{ borderLeft: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}
             >
               {timeSlots.map((time, idx) => {
                 const id = slotId(date, time)
                 const isHourStart = idx % 2 === 0
-                const showTopBorder = idx > 0 && isHourStart
-                const showHalfHourDivider = idx % 2 === 0
                 const hourIndex = Math.floor(idx / 2)
-                
+                const cellStyle = getCellStyle(date, time)
+                const isSelected = mode === 'select' && selected.has(id)
+
                 return (
                   <div
                     key={time}
                     data-cell-id={id}
-                    style={{ height: `${CELL_H}px`, ...getCellStyle(date, time) }}
-                    className={`${getCellClass(date, time, !showHalfHourDivider, hourIndex)} ${showTopBorder ? 'border-t-2 border-slate-300 dark:border-slate-600' : ''}`}
+                    style={{
+                      height: `${CELL_H}px`,
+                      backgroundColor: isSelected ? undefined : getCellBg(hourIndex),
+                      borderTop: idx > 0 && isHourStart ? hourBorderStyle : undefined,
+                      borderBottom: isHourStart && !isSelected ? halfBorderStyle : undefined,
+                      cursor: mode === 'select' ? 'crosshair' : 'default',
+                      transition: 'background 0.1s',
+                      ...cellStyle,
+                    }}
+                    className={`w-full box-border select-none-touch`}
                     onMouseDown={handleMouseDown(id)}
                     onTouchStart={handleTouchStart(id)}
                     onMouseOver={() => onCellHover?.(id)}

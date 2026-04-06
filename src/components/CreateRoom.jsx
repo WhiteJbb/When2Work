@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Calendar, Clock, Users, ArrowRight, AlertCircle, MessageSquarePlus } from 'lucide-react'
-import FeedbackModal from './FeedbackModal'
+import { Calendar, Clock, Users, ArrowRight, AlertCircle, MessageSquarePlus, Sparkles } from 'lucide-react'
 import DatePicker from './DatePicker'
 import { createRoom } from '../lib/supabase'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { generateDateRange } from '../utils/timeUtils'
+import FeedbackModal from './FeedbackModal'
 
 const TIME_OPTIONS = [
   ...Array.from({ length: 24 }, (_, i) => ({
@@ -62,27 +62,39 @@ export default function CreateRoom() {
 
   return (
     <div className="max-w-lg mx-auto">
-      {/* Hero */}
+
+      {/* ── 히어로 ── */}
       <div className="text-center mb-10">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl
-                         bg-brand-100 dark:bg-brand-900/30 mb-4">
-          <Calendar className="w-7 h-7 text-brand-600 dark:text-brand-400" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5"
+          style={{
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(79,70,229,0.3))',
+            border: '1px solid rgba(99,102,241,0.3)',
+            boxShadow: '0 0 40px rgba(99,102,241,0.2)',
+          }}
+        >
+          <Calendar className="w-8 h-8" style={{ color: '#a5b4fc' }} />
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50 mb-2">
+        <h1 className="text-4xl font-bold mb-3 tracking-tight text-glow"
+          style={{ color: '#e2e8f0' }}
+        >
           When2Work
         </h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+        <p style={{ color: '#64748b' }} className="text-sm leading-relaxed">
           팀원들의 가능한 시간을 모아 최적의 회의 시간을 찾아드립니다.<br />
           방을 만들고 링크를 공유하세요.
         </p>
       </div>
 
-      {/* Supabase 미설정 경고 */}
+      {/* ── Supabase 미설정 경고 ── */}
       {!isSupabaseConfigured && (
-        <div className="mb-6 p-4 rounded-xl border border-amber-200 dark:border-amber-800
-                         bg-amber-50 dark:bg-amber-900/20 flex gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-700 dark:text-amber-300">
+        <div className="mb-6 p-4 rounded-xl flex gap-3"
+          style={{
+            background: 'rgba(245,158,11,0.1)',
+            border: '1px solid rgba(245,158,11,0.25)',
+          }}
+        >
+          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-amber-300">
             <strong>Supabase 미설정</strong> — <code className="text-xs">.env.local</code> 파일에
             {' '}<code className="text-xs">VITE_SUPABASE_URL</code>과{' '}
             <code className="text-xs">VITE_SUPABASE_ANON_KEY</code>를 설정해주세요.
@@ -90,8 +102,9 @@ export default function CreateRoom() {
         </div>
       )}
 
-      {/* Form */}
+      {/* ── 폼 ── */}
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
+
         {/* 방 제목 */}
         <div>
           <label className="label">
@@ -144,11 +157,16 @@ export default function CreateRoom() {
             return (
               <span
                 key={d}
-                className={`text-xs px-2 py-0.5 rounded-full font-medium
-                  ${isWeekend
-                    ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'
-                    : 'bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
-                  }`}
+                className="text-xs px-2.5 py-1 rounded-full font-medium"
+                style={isWeekend ? {
+                  background: 'rgba(244,63,94,0.15)',
+                  color: '#fb7185',
+                  border: '1px solid rgba(244,63,94,0.2)',
+                } : {
+                  background: 'rgba(99,102,241,0.15)',
+                  color: '#a5b4fc',
+                  border: '1px solid rgba(99,102,241,0.2)',
+                }}
               >
                 {date.getMonth() + 1}/{date.getDate()}({days[date.getDay()]})
               </span>
@@ -188,7 +206,7 @@ export default function CreateRoom() {
         </div>
 
         {error && (
-          <p className="text-sm text-rose-500 dark:text-rose-400 flex items-center gap-1.5">
+          <p className="text-sm text-rose-400 flex items-center gap-1.5">
             <AlertCircle className="w-4 h-4" />
             {error}
           </p>
@@ -204,7 +222,7 @@ export default function CreateRoom() {
         </button>
       </form>
 
-      {/* 사용 방법 */}
+      {/* ── 사용 방법 ── */}
       <div className="mt-8 grid grid-cols-3 gap-4 text-center">
         {[
           { step: '1', title: '방 만들기', desc: '날짜와 시간 범위를 설정하고 방을 생성합니다.' },
@@ -212,37 +230,47 @@ export default function CreateRoom() {
           { step: '3', title: '결과 확인', desc: '가장 많이 겹치는 시간을 확인합니다.' },
         ].map(item => (
           <div key={item.step} className="card p-4">
-            <div className="w-7 h-7 rounded-full bg-brand-600 text-white text-sm font-bold
-                             flex items-center justify-center mx-auto mb-2">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-2"
+              style={{
+                background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                boxShadow: '0 0 12px rgba(99,102,241,0.4)',
+                color: 'white',
+              }}
+            >
               {item.step}
             </div>
-            <p className="font-semibold text-sm mb-1">{item.title}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+            <p className="font-semibold text-sm mb-1" style={{ color: '#e2e8f0' }}>{item.title}</p>
+            <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>{item.desc}</p>
           </div>
         ))}
       </div>
 
-      {/* 개선사항 문의 */}
+      {/* ── 개선사항 문의 ── */}
       <div className="mt-6">
         <button
           type="button"
           onClick={() => setShowFeedback(true)}
-          className="card p-4 w-full flex items-center gap-3 hover:border-brand-400 dark:hover:border-brand-500
-                     transition-colors group text-left"
+          className="card p-4 w-full flex items-center gap-3 transition-all duration-200 group text-left"
+          style={{ cursor: 'pointer' }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.35)'}
+          onMouseLeave={e => e.currentTarget.style.borderColor = ''}
         >
-          <div className="w-9 h-9 rounded-xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center flex-shrink-0
-                           group-hover:bg-brand-200 dark:group-hover:bg-brand-800/40 transition-colors">
-            <MessageSquarePlus className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200"
+            style={{
+              background: 'rgba(99,102,241,0.15)',
+              border: '1px solid rgba(99,102,241,0.25)',
+            }}
+          >
+            <MessageSquarePlus className="w-5 h-5" style={{ color: '#a5b4fc' }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">개선사항이나 버그를 발견하셨나요?</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">의견을 남겨주시면 검토 후 반영할게요 →</p>
+            <p className="text-sm font-semibold" style={{ color: '#cbd5e1' }}>개선사항이나 버그를 발견하셨나요?</p>
+            <p className="text-xs mt-0.5" style={{ color: '#475569' }}>의견을 남겨주시면 검토 후 반영할게요 →</p>
           </div>
         </button>
       </div>
 
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
-
     </div>
   )
 }
