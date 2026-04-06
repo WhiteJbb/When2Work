@@ -280,11 +280,11 @@ export default function CreateRoom() {
 
         {/* 바텀시트 폼 */}
         {showForm && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div className="fixed inset-0 z-[60] flex items-end justify-center">
             <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(4px)' }}
               onClick={() => setShowForm(false)}
             />
-            <div className="relative w-full max-w-lg bg-white dark:bg-[#1e1e1e] px-5 pt-6 pb-10"
+            <div className="relative w-full max-w-lg bg-white dark:bg-[#232329] px-5 pt-6 pb-24"
               style={{ borderRadius: '28px 28px 0 0', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 -4px 40px rgba(0,0,0,0.12)' }}
             >
               <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-[#e0e0e0] dark:bg-[#444]" />
