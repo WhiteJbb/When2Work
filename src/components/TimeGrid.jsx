@@ -189,8 +189,10 @@ export default function TimeGrid({
 
   function getCellClass(date, time, isHalfHour, hourIndex) {
     const id = slotId(date, time)
-    const base = 'w-full select-none-touch transition-all duration-100 box-border'
     const cursor = mode === 'select' ? 'cursor-crosshair' : 'cursor-default'
+    // select 모드에서만 터치 방지, results 모드에서는 스크롤 허용
+    const touchAction = mode === 'select' ? 'select-none-touch' : ''
+    const base = `w-full transition-all duration-100 box-border ${touchAction}`
     // :00 셀: 하단에 점선 구분선, :30 셀: 하단 없음 (그룹 경계는 hourGroup border로)
     const divider = !isHalfHour
       ? 'border-b border-dashed border-slate-300 dark:border-slate-600/70'
