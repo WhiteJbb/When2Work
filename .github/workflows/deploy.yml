@@ -35,6 +35,9 @@ jobs:
           # ✏️ GitHub 레포 Settings > Secrets and variables > Actions 에 추가
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
+          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
+          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
           # ✏️ 커스텀 도메인 사용 시 '/', GitHub Pages 기본 사용 시 '/레포이름/'
           VITE_BASE_URL: /
         run: npm run build
