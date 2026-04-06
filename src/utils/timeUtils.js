@@ -91,7 +91,7 @@ export function findBestSlots(heatmap, availabilities, topN = 5, minSlots = 2) {
   for (const [key, names] of Object.entries(heatmap)) {
     const { date, time } = parseSlotId(key)
     if (!byDate[date]) byDate[date] = []
-    byDate[date].push({ time, names, count: names.length })
+    byDate[date].push({ time, names: names.sort(), count: names.length })
   }
 
   const blocks = []
@@ -112,29 +112,46 @@ export function findBestSlots(heatmap, availabilities, topN = 5, minSlots = 2) {
         j++
       }
 
-      // 이 그룹 내에서 모든 가능한 구간 찾기
+      // 이 그룹 내에서 참여자 집합이 변하는 경계점 찾기
       if (group.length >= minSlots) {
-        // 각 시작점에서
-        for (let start = 0; start < group.length; start++) {
-          // 각 끝점까지
-          for (let end = start + minSlots - 1; end < group.length; end++) {
-            // 이 구간의 교집합 계산
-            let commonNames = new Set(group[start].names)
-            for (let k = start + 1; k <= end; k++) {
-              const intersection = [...commonNames].filter(n => group[k].names.includes(n))
-              commonNames = new Set(intersection)
-            }
+        // 각 구간의 참여자 집합 변화를 추적
+        const segments = []
+        let segStart = 0
+        
+        for (let k = 1; k < group.length; k++) {
+          const prevSet = group[k - 1].names.join(',')
+          const currSet = group[k].names.join(',')
+          
+          // 참여자 집합이 바뀌면 새 구간 시작
+          if (prevSet !== currSet) {
+            segments.push({ start: segStart, end: k - 1 })
+            segStart = k
+          }
+        }
+        // 마지막 구간 추가
+        segments.push({ start: segStart, end: group.length - 1 })
 
-            if (commonNames.size > 0) {
-              blocks.push({
-                date,
-                startTime: group[start].time,
-                endTime: addMinutes(group[end].time, 30),
-                participants: [...commonNames].sort(),
-                count: commonNames.size,
-                durationMins: (end - start + 1) * 30,
-              })
-            }
+        // 각 구간에서 가능한 모든 연속 블록 생성
+        for (const seg of segments) {
+          const segLength = seg.end - seg.start + 1
+          if (segLength < minSlots) continue
+
+          // 이 구간의 참여자 (모든 슬롯에 공통)
+          let commonNames = new Set(group[seg.start].names)
+          for (let k = seg.start + 1; k <= seg.end; k++) {
+            const intersection = [...commonNames].filter(n => group[k].names.includes(n))
+            commonNames = new Set(intersection)
+          }
+
+          if (commonNames.size > 0) {
+            blocks.push({
+              date,
+              startTime: group[seg.start].time,
+              endTime: addMinutes(group[seg.end].time, 30),
+              participants: [...commonNames].sort(),
+              count: commonNames.size,
+              durationMins: segLength * 30,
+            })
           }
         }
       }
@@ -143,43 +160,50 @@ export function findBestSlots(heatmap, availabilities, topN = 5, minSlots = 2) {
     }
   }
 
-  // 겹치는 구간 제거: 같은 참여자 집합이면서 한 구간이 다른 구간을 완전히 포함하는 경우
-  const filtered = []
-  
+  // 중복 제거 및 부분집합 제거
+  const uniqueBlocks = []
+  const blockKey = (b) => `${b.date}|${b.startTime}|${b.endTime}|${b.participants.join(',')}`
+  const seen = new Set()
+
   for (const block of blocks) {
+    const key = blockKey(block)
+    if (seen.has(key)) continue
+    seen.add(key)
+
+    // 이 블록이 다른 블록의 부분집합인지 확인
     let isSubset = false
-    
     for (const other of blocks) {
-      if (block === other) continue
+      if (blockKey(block) === blockKey(other)) continue
       if (block.date !== other.date) continue
       if (block.participants.join(',') !== other.participants.join(',')) continue
       
-      // other가 block을 완전히 포함하는지 확인
-      if (other.startTime <= block.startTime && other.endTime >= block.endTime && 
+      // other가 block을 완전히 포함하는지
+      if (other.startTime <= block.startTime && 
+          other.endTime >= block.endTime && 
           other.durationMins > block.durationMins) {
         isSubset = true
         break
       }
     }
-    
+
     if (!isSubset) {
-      filtered.push(block)
+      uniqueBlocks.push(block)
     }
   }
 
   // 참여 인원 수 → 길이 → 날짜순 정렬
-  filtered.sort((a, b) => {
+  uniqueBlocks.sort((a, b) => {
     if (b.count !== a.count) return b.count - a.count
     if (b.durationMins !== a.durationMins) return b.durationMins - a.durationMins
     return a.date.localeCompare(b.date)
   })
 
   // 최고 인원수와 시간 찾기
-  const maxCount = filtered.length > 0 ? filtered[0].count : 0
-  const maxDuration = filtered.filter(b => b.count === maxCount).reduce((max, b) => Math.max(max, b.durationMins), 0)
+  const maxCount = uniqueBlocks.length > 0 ? uniqueBlocks[0].count : 0
+  const maxDuration = uniqueBlocks.filter(b => b.count === maxCount).reduce((max, b) => Math.max(max, b.durationMins), 0)
   
   // 강조 표시 추가
-  const result = filtered.slice(0, topN).map(block => ({
+  const result = uniqueBlocks.slice(0, topN).map(block => ({
     ...block,
     isHighlighted: block.count === maxCount && block.durationMins === maxDuration
   }))
