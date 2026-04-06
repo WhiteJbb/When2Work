@@ -91,17 +91,23 @@ export default function ResultsView({ room, availabilities }) {
             {bestSlots.map((slot, i) => (
               <div
                 key={`${slot.date}-${slot.startTime}-${i}`}
-                className={`card p-4 flex items-center gap-4 ${i === 0 ? 'ring-2 ring-brand-400 dark:ring-brand-500' : ''}`}
+                className={`card p-4 flex items-center gap-4 ${
+                  slot.isHighlighted 
+                    ? 'ring-2 ring-brand-500 dark:ring-brand-400 bg-brand-50/50 dark:bg-brand-900/20' 
+                    : ''
+                }`}
               >
                 {/* 순위 뱃지 */}
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0
-                  ${i === 0
+                  ${slot.isHighlighted
+                    ? 'bg-brand-500 text-white'
+                    : i === 0
                     ? 'bg-amber-400 text-white'
                     : i === 1
                     ? 'bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200'
                     : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                   }`}>
-                  {i + 1}
+                  {slot.isHighlighted ? '★' : i + 1}
                 </div>
 
                 <div className="flex-1 min-w-0">

@@ -80,10 +80,10 @@ export function buildHeatmap(availabilities) {
 
 /**
  * 가장 많은 사람이 가능한 연속 슬롯 블록을 찾아 상위 N개 반환
- * 같은 참여자 집합의 경우 가장 긴 구간만 표시
+ * 겹치는 구간을 분리하여 각 구간별로 가능한 사람 수 계산
  * minSlots: 최소 연속 슬롯 수 (기본 2 = 1시간)
  */
-export function findBestSlots(heatmap, availabilities, topN = 3, minSlots = 2) {
+export function findBestSlots(heatmap, availabilities, topN = 5, minSlots = 2) {
   if (!availabilities.length) return []
 
   // 날짜별로 슬롯 그룹화
@@ -100,67 +100,91 @@ export function findBestSlots(heatmap, availabilities, topN = 3, minSlots = 2) {
     // 시간순 정렬
     slots.sort((a, b) => a.time.localeCompare(b.time))
 
-    // 모든 가능한 연속 구간 탐색
-    for (let i = 0; i < slots.length; i++) {
-      // i부터 시작하는 연속 구간들을 찾음
-      let j = i
-      let commonNames = new Set(slots[i].names)
-
-      while (j < slots.length) {
-        // j번째 슬롯까지의 교집합 계산
-        if (j > i) {
-          const curr = slots[j - 1].time
-          const next = slots[j].time
-          
-          // 연속되지 않으면 중단
-          if (!isConsecutive(curr, next)) break
-          
-          // 교집합 업데이트
-          const nextNames = new Set(slots[j].names)
-          const intersection = [...commonNames].filter(n => nextNames.has(n))
-          commonNames = new Set(intersection)
-        }
-
-        const slotCount = j - i + 1
-        
-        // 최소 슬롯 수 이상이고 가능한 사람이 있으면 추가
-        if (slotCount >= minSlots && commonNames.size > 0) {
-          blocks.push({
-            date,
-            startTime: slots[i].time,
-            endTime: addMinutes(slots[j].time, 30),
-            participants: [...commonNames].sort(),
-            count: commonNames.size,
-            durationMins: slotCount * 30,
-          })
-        }
-        
+    // 연속된 슬롯들을 그룹화
+    let i = 0
+    while (i < slots.length) {
+      const group = [slots[i]]
+      let j = i + 1
+      
+      // 연속된 슬롯들을 모음
+      while (j < slots.length && isConsecutive(slots[j - 1].time, slots[j].time)) {
+        group.push(slots[j])
         j++
       }
+
+      // 이 그룹 내에서 모든 가능한 구간 찾기
+      if (group.length >= minSlots) {
+        // 각 시작점에서
+        for (let start = 0; start < group.length; start++) {
+          // 각 끝점까지
+          for (let end = start + minSlots - 1; end < group.length; end++) {
+            // 이 구간의 교집합 계산
+            let commonNames = new Set(group[start].names)
+            for (let k = start + 1; k <= end; k++) {
+              const intersection = [...commonNames].filter(n => group[k].names.includes(n))
+              commonNames = new Set(intersection)
+            }
+
+            if (commonNames.size > 0) {
+              blocks.push({
+                date,
+                startTime: group[start].time,
+                endTime: addMinutes(group[end].time, 30),
+                participants: [...commonNames].sort(),
+                count: commonNames.size,
+                durationMins: (end - start + 1) * 30,
+              })
+            }
+          }
+        }
+      }
+
+      i = j
     }
   }
 
-  // 같은 참여자 집합의 경우 가장 긴 구간만 남기기
-  const byParticipants = {}
+  // 겹치는 구간 제거: 같은 참여자 집합이면서 한 구간이 다른 구간을 완전히 포함하는 경우
+  const filtered = []
   
   for (const block of blocks) {
-    const key = `${block.date}|${block.participants.join(',')}`
+    let isSubset = false
     
-    if (!byParticipants[key] || byParticipants[key].durationMins < block.durationMins) {
-      byParticipants[key] = block
+    for (const other of blocks) {
+      if (block === other) continue
+      if (block.date !== other.date) continue
+      if (block.participants.join(',') !== other.participants.join(',')) continue
+      
+      // other가 block을 완전히 포함하는지 확인
+      if (other.startTime <= block.startTime && other.endTime >= block.endTime && 
+          other.durationMins > block.durationMins) {
+        isSubset = true
+        break
+      }
+    }
+    
+    if (!isSubset) {
+      filtered.push(block)
     }
   }
 
-  const uniqueBlocks = Object.values(byParticipants)
-
   // 참여 인원 수 → 길이 → 날짜순 정렬
-  uniqueBlocks.sort((a, b) => {
+  filtered.sort((a, b) => {
     if (b.count !== a.count) return b.count - a.count
     if (b.durationMins !== a.durationMins) return b.durationMins - a.durationMins
     return a.date.localeCompare(b.date)
   })
 
-  return uniqueBlocks.slice(0, topN)
+  // 최고 인원수와 시간 찾기
+  const maxCount = filtered.length > 0 ? filtered[0].count : 0
+  const maxDuration = filtered.filter(b => b.count === maxCount).reduce((max, b) => Math.max(max, b.durationMins), 0)
+  
+  // 강조 표시 추가
+  const result = filtered.slice(0, topN).map(block => ({
+    ...block,
+    isHighlighted: block.count === maxCount && block.durationMins === maxDuration
+  }))
+
+  return result
 }
 
 function isConsecutive(time1, time2) {
