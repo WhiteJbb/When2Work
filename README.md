@@ -12,12 +12,12 @@
 ## 주요 기능
 
 - **방 생성** — 회의 제목, 날짜 범위(최대 7일), 시간 범위를 설정하고 고유 링크 생성
-- **드래그 시간 선택** — 클릭·드래그(마우스/터치)로 30분 단위 가능 시간 선택 (When2Meet 스타일)
-- **히트맵 결과** — 참여자가 많을수록 진한 색으로 표시되는 오버레이 그리드
-- **추천 시간대** — 가장 많은 인원이 연속으로 가능한 시간을 자동 추천
-- **방 삭제** — 수동 삭제 버튼 + 10일 후 자동 삭제
+- **드래그 시간 선택** — 클릭·드래그(마우스/터치)로 30분 단위 가능 시간 선택, 직관적인 UI
+- **히트맵 결과** — 참여자가 많을수록 진한 색으로 표시되는 시각화 그리드
+- **스마트 추천** — 겹치는 시간대를 정확히 분석하여 최적의 회의 시간 자동 추천
+- **방 삭제** — 수동 삭제 버튼 + 10일 후 자동 삭제로 데이터 관리
 - **다크/라이트 모드** — 시스템 설정 연동 + 수동 전환, localStorage 유지
-- **반응형** — 모바일 터치 드래그 지원
+- **반응형 디자인** — 모바일 터치 드래그 및 스크롤 완벽 지원
 
 ---
 
@@ -166,19 +166,33 @@ $$;
 -- SQL: select delete_old_rooms();
 ```
 
-### 3. Cron Job 설정 (자동 삭제)
+### 4. Cron Job 설정 (자동 삭제)
 
-Supabase 대시보드 → **Database → Cron Jobs** → **Create a new cron job**:
+Supabase 대시보드 → **Database** → **Extensions**에서 `pg_cron` 활성화 후,
+**SQL Editor**에서 다음 쿼리 실행:
 
-| 항목 | 값 |
-|------|-----|
-| Name | `delete_old_rooms` |
-| Schedule | `0 0 * * *` (매일 자정) |
-| SQL | `select delete_old_rooms();` |
+```sql
+-- Cron Job 생성 (매일 자정에 실행)
+select cron.schedule(
+  'delete-old-rooms',
+  '0 0 * * *',
+  $$select delete_old_rooms();$$
+);
+```
 
-> 10일 지난 방은 자동으로 삭제됩니다. 기간을 변경하려면 위 SQL의 `interval '10 days'` 부분을 수정하세요.
+> 10일 지난 방은 매일 자정에 자동으로 삭제됩니다. 기간을 변경하려면 위 SQL 함수의 `interval '10 days'` 부분을 수정하세요.
 
-### 4. API 키 확인
+**Cron Job 확인:**
+```sql
+select * from cron.job;
+```
+
+**Cron Job 삭제 (필요시):**
+```sql
+select cron.unschedule('delete-old-rooms');
+```
+
+### 5. API 키 확인
 
 **Project Settings → API** 메뉴에서 복사:
 
@@ -252,9 +266,16 @@ export default defineConfig({
 
 3. 각자 시간 입력
    └─ 이름 입력 → 드래그로 가능한 시간 선택 → 저장
+   └─ 선택 초기화 버튼으로 쉽게 재선택 가능
 
 4. 결과 확인
-   └─ "결과 보기" 탭에서 히트맵 확인 + 추천 시간대 확인
+   └─ "결과 보기" 탭에서 히트맵 확인
+   └─ 겹치는 시간대를 정확히 분석한 추천 시간대 확인
+   └─ 최적 시간대는 별(★) 표시로 강조
+
+5. 방 관리
+   └─ 필요시 휴지통 버튼으로 즉시 삭제
+   └─ 10일 지난 방은 자동 삭제
 ```
 
 ---
@@ -266,6 +287,47 @@ npm run dev      # 개발 서버 (localhost:5173)
 npm run build    # 프로덕션 빌드 → dist/
 npm run preview  # 빌드 결과 미리보기
 ```
+
+---
+
+## 커스텀 도메인 설정 (선택사항)
+
+GitHub Pages 기본 도메인 대신 자신의 도메인을 사용할 수 있습니다.
+
+### 1. DNS 설정 (도메인 제공업체)
+
+**서브도메인 사용 시** (예: `when2work.yourdomain.com`):
+```
+타입: CNAME
+호스트: when2work
+값: YOUR_GITHUB_USERNAME.github.io.
+```
+
+**루트 도메인 사용 시** (예: `yourdomain.com`):
+```
+타입: A
+호스트: @
+값: 185.199.108.153
+     185.199.109.153
+     185.199.110.153
+     185.199.111.153
+```
+
+### 2. GitHub Pages 설정
+
+- Settings → Pages → Custom domain에 도메인 입력
+- DNS 체크 완료되면 Enforce HTTPS 활성화
+
+### 3. CNAME 파일
+
+`public/CNAME` 파일에 도메인 입력:
+```
+when2work.yourdomain.com
+```
+
+### 4. Base URL 설정
+
+커스텀 도메인 사용 시 `.env.local`과 `.github/workflows/deploy.yml`의 `VITE_BASE_URL`을 `/`로 설정 (이미 설정됨)
 
 ---
 
