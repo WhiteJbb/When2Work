@@ -80,7 +80,7 @@ export function buildHeatmap(availabilities) {
 
 /**
  * 가장 많은 사람이 가능한 연속 슬롯 블록을 찾아 상위 N개 반환
- * 모든 가능한 연속 구간을 탐색하여 각 구간에서 가능한 사람 수 계산
+ * 같은 참여자 집합의 경우 가장 긴 구간만 표시
  * minSlots: 최소 연속 슬롯 수 (기본 2 = 1시간)
  */
 export function findBestSlots(heatmap, availabilities, topN = 3, minSlots = 2) {
@@ -129,7 +129,7 @@ export function findBestSlots(heatmap, availabilities, topN = 3, minSlots = 2) {
             date,
             startTime: slots[i].time,
             endTime: addMinutes(slots[j].time, 30),
-            participants: [...commonNames],
+            participants: [...commonNames].sort(),
             count: commonNames.size,
             durationMins: slotCount * 30,
           })
@@ -140,17 +140,18 @@ export function findBestSlots(heatmap, availabilities, topN = 3, minSlots = 2) {
     }
   }
 
-  // 중복 제거 (같은 시간대, 같은 참여자)
-  const uniqueBlocks = []
-  const seen = new Set()
+  // 같은 참여자 집합의 경우 가장 긴 구간만 남기기
+  const byParticipants = {}
   
   for (const block of blocks) {
-    const key = `${block.date}|${block.startTime}|${block.endTime}|${block.participants.sort().join(',')}`
-    if (!seen.has(key)) {
-      seen.add(key)
-      uniqueBlocks.push(block)
+    const key = `${block.date}|${block.participants.join(',')}`
+    
+    if (!byParticipants[key] || byParticipants[key].durationMins < block.durationMins) {
+      byParticipants[key] = block
     }
   }
+
+  const uniqueBlocks = Object.values(byParticipants)
 
   // 참여 인원 수 → 길이 → 날짜순 정렬
   uniqueBlocks.sort((a, b) => {
