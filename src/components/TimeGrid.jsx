@@ -18,7 +18,6 @@ export default function TimeGrid({
   const isDark = theme === 'dark'
   const timeSlots = generateTimeSlots(startHour, endHour)
 
-  // ─── 드래그 상태 ──────────────────────────────────────────────────────────
   const isDragging = useRef(false)
   const dragMode = useRef('add')
   const gridRef = useRef(null)
@@ -118,115 +117,98 @@ export default function TimeGrid({
 
   const CELL_H = 32
 
-  function getCellStyle(date, time) {
+  // 다크/라이트 색상 토큰
+  const colors = isDark ? {
+    gridBorder: '#3a3a3c',
+    headerBg: '#2c2c2e',
+    timeLabelBg: '#2c2c2e',
+    timeLabelBorder: '#3a3a3c',
+    hourBorder: '#3a3a3c',
+    halfBorder: '#333335',
+    colBorder: '#3a3a3c',
+    cellEven: '#1c1c1e',
+    cellOdd: '#252527',
+    timeText: '#636366',
+    weekdayText: '#aeaeb2',
+    weekendText: '#f87171',
+  } : {
+    gridBorder: '#e8e8f0',
+    headerBg: '#ffffff',
+    timeLabelBg: '#fafafa',
+    timeLabelBorder: '#e8e8f0',
+    hourBorder: '#e0e0ec',
+    halfBorder: '#ececf4',
+    colBorder: '#ececf4',
+    cellEven: '#ffffff',
+    cellOdd: '#fafafa',
+    timeText: '#b0b0c0',
+    weekdayText: '#3d3d56',
+    weekendText: '#e11d48',
+  }
+
+  function getCellStyle(date, time, hourIndex) {
     const id = slotId(date, time)
     if (mode === 'select') {
       if (selected.has(id)) {
         return {
-          background: 'linear-gradient(135deg, rgba(99,102,241,0.85), rgba(79,70,229,0.85))',
-          boxShadow: isDark ? '0 0 8px rgba(99,102,241,0.5)' : 'none',
+          background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
         }
       }
-      return {}
+      return { backgroundColor: hourIndex % 2 === 0 ? colors.cellEven : colors.cellOdd }
     }
     const names = heatmap[id] || []
     const ratio = totalParticipants > 0 ? names.length / totalParticipants : 0
-    return { backgroundColor: heatColor(ratio, isDark) }
-  }
-
-  function getCellBg(hourIndex) {
-    if (isDark) {
-      return hourIndex % 2 === 0
-        ? 'rgba(255,255,255,0.02)'
-        : 'rgba(255,255,255,0.04)'
+    if (ratio === 0) return { backgroundColor: hourIndex % 2 === 0 ? colors.cellEven : colors.cellOdd }
+    return { backgroundColor: isDark
+      ? `rgba(79,70,229,${0.15 + ratio * 0.75})`
+      : `rgba(79,70,229,${0.12 + ratio * 0.78})`
     }
-    return hourIndex % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.04)'
   }
-
-  const headerStyle = isDark ? {
-    background: 'rgba(8,8,21,0.9)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    borderBottom: '2px solid rgba(99,102,241,0.2)',
-  } : {
-    background: 'rgba(248,250,255,0.9)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    borderBottom: '2px solid rgba(99,102,241,0.15)',
-  }
-
-  const timeLabelColStyle = isDark ? {
-    background: 'rgba(255,255,255,0.02)',
-    borderRight: '2px solid rgba(255,255,255,0.06)',
-  } : {
-    background: 'rgba(0,0,0,0.02)',
-    borderRight: '2px solid rgba(0,0,0,0.06)',
-  }
-
-  const hourBorderStyle = isDark
-    ? '2px solid rgba(255,255,255,0.06)'
-    : '2px solid rgba(0,0,0,0.06)'
-
-  const halfBorderStyle = isDark
-    ? '1px dashed rgba(255,255,255,0.05)'
-    : '1px dashed rgba(0,0,0,0.06)'
 
   return (
-    <div className="overflow-auto rounded-xl"
-      style={{
-        border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(99,102,241,0.15)',
-        boxShadow: isDark ? '0 4px 32px rgba(0,0,0,0.4)' : '0 4px 16px rgba(99,102,241,0.08)',
-      }}
+    <div className="overflow-auto rounded-3xl"
+      style={{ border: `1.5px solid ${colors.gridBorder}`, boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
     >
-      <div
-        ref={gridRef}
-        className="relative"
-        onMouseMove={handleMouseMove}
-        onTouchMove={handleTouchMove}
+      <div ref={gridRef} className="relative" onMouseMove={handleMouseMove} onTouchMove={handleTouchMove}
         style={{ minWidth: `${dates.length * 64 + 70}px` }}
       >
-        {/* ── 헤더: 날짜 ── */}
-        <div className="flex sticky top-0 z-10 shadow-sm" style={headerStyle}>
+        {/* ── 헤더 ── */}
+        <div className="flex sticky top-0 z-10"
+          style={{ background: colors.headerBg, borderBottom: `2px solid ${colors.hourBorder}`, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
+        >
           <div className="w-[70px] flex-shrink-0" />
           {dates.map(d => {
             const { weekday, month, day, isWeekend } = formatDateHeader(d)
             return (
-              <div
-                key={d}
-                className="flex-1 min-w-[64px] text-center py-3"
-                style={{
-                  borderLeft: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
-                  color: isWeekend
-                    ? '#fb7185'
-                    : isDark ? '#cbd5e1' : '#475569',
-                }}
+              <div key={d} className="flex-1 min-w-[64px] text-center py-3"
+                style={{ borderLeft: `1.5px solid ${colors.colBorder}` }}
               >
-                <p className="text-sm font-bold">{weekday}</p>
-                <p className="text-xs mt-0.5 opacity-60">{month}/{day}</p>
+                <p className="text-sm font-extrabold" style={{ color: isWeekend ? colors.weekendText : colors.weekdayText }}>{weekday}</p>
+                <p className="text-xs mt-0.5 font-medium opacity-50" style={{ color: isWeekend ? colors.weekendText : colors.weekdayText }}>{month}/{day}</p>
               </div>
             )
           })}
         </div>
 
-        {/* ── 그리드 바디 ── */}
+        {/* ── 바디 ── */}
         <div className="flex">
-
-          {/* 시간 라벨 열 */}
-          <div className="w-[70px] flex-shrink-0" style={timeLabelColStyle}>
+          {/* 시간 라벨 */}
+          <div className="w-[70px] flex-shrink-0"
+            style={{ background: colors.timeLabelBg, borderRight: `2px solid ${colors.timeLabelBorder}` }}
+          >
             {timeSlots.map((time, idx) => {
               const isHourStart = idx % 2 === 0
               return (
-                <div
-                  key={time}
-                  className="relative"
+                <div key={time} className="relative"
                   style={{
                     height: `${CELL_H}px`,
-                    borderTop: idx > 0 && isHourStart ? hourBorderStyle : undefined,
+                    borderTop: idx > 0 && isHourStart ? `2px solid ${colors.hourBorder}` : undefined,
                   }}
                 >
                   {isHourStart && (
-                    <span className="absolute top-1 right-3 text-[12px] font-semibold leading-none whitespace-nowrap px-1 py-0.5 rounded"
-                      style={{ color: isDark ? '#64748b' : '#94a3b8' }}
+                    <span className="absolute top-1 right-3 text-[11px] font-bold leading-none whitespace-nowrap"
+                      style={{ color: colors.timeText }}
                     >
                       {time}
                     </span>
@@ -238,33 +220,26 @@ export default function TimeGrid({
 
           {/* 날짜별 열 */}
           {dates.map(date => (
-            <div
-              key={date}
-              data-date-col={date}
-              className="flex-1 min-w-[64px]"
-              style={{ borderLeft: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}
+            <div key={date} data-date-col={date} className="flex-1 min-w-[64px]"
+              style={{ borderLeft: `1.5px solid ${colors.colBorder}` }}
             >
               {timeSlots.map((time, idx) => {
                 const id = slotId(date, time)
                 const isHourStart = idx % 2 === 0
                 const hourIndex = Math.floor(idx / 2)
-                const cellStyle = getCellStyle(date, time)
                 const isSelected = mode === 'select' && selected.has(id)
 
                 return (
-                  <div
-                    key={time}
-                    data-cell-id={id}
+                  <div key={time} data-cell-id={id}
                     style={{
                       height: `${CELL_H}px`,
-                      backgroundColor: isSelected ? undefined : getCellBg(hourIndex),
-                      borderTop: idx > 0 && isHourStart ? hourBorderStyle : undefined,
-                      borderBottom: isHourStart && !isSelected ? halfBorderStyle : undefined,
+                      borderTop: idx > 0 && isHourStart ? `2px solid ${colors.hourBorder}` : undefined,
+                      borderBottom: isHourStart && !isSelected ? `1px solid ${colors.halfBorder}` : undefined,
                       cursor: mode === 'select' ? 'crosshair' : 'default',
-                      transition: 'background 0.1s',
-                      ...cellStyle,
+                      transition: 'background 0.08s',
+                      ...getCellStyle(date, time, hourIndex),
                     }}
-                    className={`w-full box-border select-none-touch`}
+                    className="w-full box-border select-none-touch"
                     onMouseDown={handleMouseDown(id)}
                     onTouchStart={handleTouchStart(id)}
                     onMouseOver={() => onCellHover?.(id)}

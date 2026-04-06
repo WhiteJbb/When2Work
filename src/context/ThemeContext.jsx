@@ -5,7 +5,7 @@ const ThemeContext = createContext(null)
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('w2w-theme')
-    return saved || 'dark'
+    return saved || 'light'
   })
 
   useEffect(() => {

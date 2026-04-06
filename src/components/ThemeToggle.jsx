@@ -7,17 +7,15 @@ export default function ThemeToggle() {
     <button
       onClick={toggle}
       aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
-      className="p-2 rounded-lg transition-all duration-150"
+      className="w-9 h-9 rounded-2xl flex items-center justify-center transition-all duration-150 active:scale-90"
       style={{
-        background: 'rgba(255,255,255,0.07)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        color: '#94a3b8',
+        background: theme === 'dark' ? '#3a3a3c' : '#f4f4f8',
+        border: '2px solid',
+        borderColor: theme === 'dark' ? '#48484a' : '#e8e8f0',
+        color: theme === 'dark' ? '#a5b4fc' : '#6366f1',
       }}
     >
-      {theme === 'dark'
-        ? <Sun className="w-4 h-4" />
-        : <Moon className="w-4 h-4" />
-      }
+      {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
     </button>
   )
 }
