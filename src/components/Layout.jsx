@@ -73,7 +73,7 @@ export default function Layout({ children }) {
       {/* ── 메인 ── */}
       <main className="flex-1 w-full mx-auto
                        px-5 pb-28 max-w-lg
-                       md:px-6 md:pb-10 md:max-w-5xl">
+                       md:px-10 md:pb-10 md:max-w-7xl">
         {children}
       </main>
 
