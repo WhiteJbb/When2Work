@@ -37,30 +37,30 @@ export default function FeedbackModal({ onClose }) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0" style={{ background:'rgba(0,0,0,0.4)', backdropFilter:'blur(4px)' }} onClick={onClose}/>
 
-      <div className="relative w-full sm:max-w-md bg-white dark:bg-[#2c2c2e] p-6"
-        style={{ borderRadius:'28px 28px 0 0', boxShadow:'0 -4px 32px rgba(0,0,0,0.12)' }}
+      <div className="relative w-full sm:max-w-md bg-white dark:bg-[#232329] p-6 pb-24 sm:pb-6 modal-sheet"
+        style={{ boxShadow:'0 -4px 32px rgba(0,0,0,0.2)', maxHeight:'90vh', overflowY:'auto' }}
       >
         {/* 핸들 */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full sm:hidden"
-          style={{ background:'#e4e4ec' }}
-        />
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full sm:hidden bg-[#e4e4ec] dark:bg-[#3a3a45]" />
 
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-5">
-          <p className="font-extrabold text-lg flex items-center gap-2" style={{ color:'#111111' }}><MessageCircle className="w-5 h-5" style={{ color:'#0ecfb0' }} /> 의견 보내기</p>
+          <p className="font-extrabold text-lg flex items-center gap-2 text-[#111] dark:text-[#e4e4e7]">
+            <MessageCircle className="w-5 h-5 text-[#0ecfb0] dark:text-[#0ab8a0]" /> 의견 보내기
+          </p>
           <button onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center active:scale-90 transition-all"
-            style={{ borderRadius:'999px', background:'#f0f0f5', border:'1.5px solid #e4e4ec' }}
+            className="w-8 h-8 flex items-center justify-center active:scale-90 transition-all bg-[#f0f0f5] dark:bg-[#2c2c35] border border-[#e4e4ec] dark:border-[#3a3a45]"
+            style={{ borderRadius:'999px' }}
           >
-            <X className="w-4 h-4" style={{ color:'#888899' }}/>
+            <X className="w-4 h-4 text-[#888] dark:text-[#666]"/>
           </button>
         </div>
 
         {status === 'success' ? (
           <div className="py-10 flex flex-col items-center gap-3 text-center">
-            <CheckCircle2 className="w-14 h-14" style={{ color:'#0ecfb0' }} />
-            <p className="font-extrabold text-lg" style={{ color:'#111111' }}>전송 완료!</p>
-            <p className="text-sm font-medium" style={{ color:'#9090a8' }}>소중한 의견 감사합니다. 검토 후 반영할게요.</p>
+            <CheckCircle2 className="w-14 h-14 text-[#0ecfb0] dark:text-[#0ab8a0]" />
+            <p className="font-extrabold text-lg text-[#111] dark:text-[#e4e4e7]">전송 완료!</p>
+            <p className="text-sm font-medium text-[#999] dark:text-[#666]">소중한 의견 감사합니다. 검토 후 반영할게요.</p>
             <button onClick={onClose} className="btn-primary mt-3 px-10">닫기</button>
           </div>
         ) : (
@@ -71,14 +71,15 @@ export default function FeedbackModal({ onClose }) {
               {TYPES.map(t => (
                 <button key={t.value} type="button"
                   onClick={() => setForm(f => ({...f, type: t.value}))}
-                  className="flex-1 py-2.5 text-sm font-extrabold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                  className={`flex-1 py-2.5 text-sm font-extrabold transition-all active:scale-95 flex items-center justify-center gap-1.5 ${
+                    form.type === t.value
+                      ? 'text-white'
+                      : 'bg-[#f0f0f5] dark:bg-[#2c2c35] text-[#888] dark:text-[#666] border-2 border-[#e4e4ec] dark:border-[#3a3a45]'
+                  }`}
                   style={form.type === t.value ? {
-                    borderRadius:'999px', background:'#0ecfb0', color:'#fff',
-                    boxShadow:'0 4px 12px rgba(14,207,176,0.4)', border:'2px solid transparent',
-                  } : {
-                    borderRadius:'999px', background:'#f0f0f5', color:'#888899',
-                    border:'2px solid #e4e4ec',
-                  }}
+                    borderRadius:'999px', background:'var(--brand)',
+                    boxShadow:'0 4px 12px var(--brand-shadow)', border:'2px solid transparent',
+                  } : { borderRadius:'999px' }}
                 >
                   {t.icon && <t.icon className="w-3.5 h-3.5" />}
                   {t.label}
@@ -88,25 +89,25 @@ export default function FeedbackModal({ onClose }) {
 
             {/* 내용 */}
             <div>
-              <label className="label flex items-center gap-1"><FileText className="w-3 h-3" /> 내용 <span style={{ color:'#e11d48' }}>*</span></label>
+              <label className="label flex items-center gap-1"><FileText className="w-3 h-3" /> 내용 <span className="text-[#e11d48]">*</span></label>
               <textarea className="input resize-none" rows={4}
                 placeholder="어떤 점이 불편하셨나요? 자유롭게 적어주세요."
                 value={form.message} onChange={e => setForm(f => ({...f, message: e.target.value}))} maxLength={1000}
               />
-              <p className="text-right text-xs font-semibold mt-1" style={{ color:'#c0c0d0' }}>{form.message.length}/1000</p>
+              <p className="text-right text-xs font-semibold mt-1 text-[#bbb] dark:text-[#555]">{form.message.length}/1000</p>
             </div>
 
             {/* 연락처 */}
             <div>
-              <label className="label flex items-center gap-1"><Mail className="w-3 h-3" /> 연락처 <span className="normal-case font-medium" style={{ color:'#c0c0d0' }}>(선택)</span></label>
+              <label className="label flex items-center gap-1"><Mail className="w-3 h-3" /> 연락처 <span className="normal-case font-medium text-[#bbb] dark:text-[#555]">(선택)</span></label>
               <input type="text" className="input" placeholder="이메일 또는 연락처"
                 value={form.contact} onChange={e => setForm(f => ({...f, contact: e.target.value}))}
               />
             </div>
 
             {status === 'error' && (
-              <div className="flex items-center gap-2 px-4 py-3 text-sm font-semibold"
-                style={{ borderRadius:'999px', background:'#fff1f2', color:'#e11d48', border:'1.5px solid #fecdd3' }}
+              <div className="flex items-center gap-2 px-4 py-3 text-sm font-semibold bg-[#fff1f2] dark:bg-[#2d1a1d] text-[#e11d48] border border-[#fecdd3] dark:border-[#4a2028]"
+                style={{ borderRadius:'999px' }}
               >
                 <AlertCircle className="w-4 h-4 flex-shrink-0"/> 전송에 실패했습니다. 다시 시도해주세요.
               </div>

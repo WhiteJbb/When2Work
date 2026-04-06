@@ -1,6 +1,6 @@
 # When2Work
 
-팀원들의 가능한 일정을 입력받아 최적의 회의/협업 시간을 찾아주는 웹 애플리케이션입니다.
+모두의 일정을 한번에 — 팀원들의 가능한 시간을 모아 최적의 만남 시간을 찾아주는 웹 애플리케이션입니다.
 
 ![React](https://img.shields.io/badge/React-18-61dafb?logo=react)
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite)
@@ -11,13 +11,14 @@
 
 ## 주요 기능
 
-- **방 생성** — 회의 제목, 날짜 범위(최대 7일), 시간 범위를 설정하고 고유 링크 생성
-- **드래그 시간 선택** — 클릭·드래그(마우스/터치)로 30분 단위 가능 시간 선택, 직관적인 UI
+- **방 생성** — 제목, 날짜 범위(최대 7일), 시간 범위(00:00~24:00)를 설정하고 고유 링크 생성
+- **드래그 시간 선택** — 클릭·드래그(마우스/터치)로 30분 단위 가능 시간 선택
 - **히트맵 결과** — 참여자가 많을수록 진한 색으로 표시되는 시각화 그리드
-- **스마트 추천** — 겹치는 시간대를 정확히 분석하여 최적의 회의 시간 자동 추천
-- **방 삭제** — 수동 삭제 버튼 + 10일 후 자동 삭제로 데이터 관리
-- **다크/라이트 모드** — 시스템 설정 연동 + 수동 전환, localStorage 유지
-- **반응형 디자인** — 모바일 터치 드래그 및 스크롤 완벽 지원
+- **스마트 추천** — 겹치는 시간대를 분석하여 최적의 시간 자동 추천 (★ 표시)
+- **인앱 피드백** — 개선사항·버그 제보를 앱 내에서 바로 전송 (EmailJS)
+- **방 삭제** — 수동 삭제 버튼 + 10일 후 자동 삭제
+- **다크/라이트 모드** — 수동 전환, localStorage 유지
+- **반응형 디자인** — 모바일 우선 + PC 2열 레이아웃 대응
 
 ---
 
@@ -30,6 +31,7 @@
 | 아이콘 | Lucide React |
 | 라우팅 | React Router v6 (HashRouter) |
 | 백엔드/DB | Supabase (무료 티어) |
+| 피드백 메일 | EmailJS (REST API) |
 | 배포 | GitHub Pages + GitHub Actions |
 
 ---
@@ -37,63 +39,83 @@
 ## 프로젝트 구조
 
 ```
-when2work/
+When2Work/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml          # GitHub Actions 자동 배포 워크플로우
 ├── public/
-│   └── favicon.svg
+│   ├── favicon.svg             # 앱 아이콘
+│   └── CNAME                   # 커스텀 도메인 설정 (선택)
 ├── src/
 │   ├── components/
-│   │   ├── CreateRoom.jsx      # 방 생성 페이지 (+ Supabase 설정 가이드 내장)
-│   │   ├── RoomPage.jsx        # 방 메인 페이지 (시간 입력 탭 / 결과 탭)
-│   │   ├── TimeGrid.jsx        # 드래그 선택 그리드 + 히트맵 (select/results 모드)
+│   │   ├── CreateRoom.jsx      # 방 생성 페이지
+│   │   ├── RoomPage.jsx        # 방 메인 페이지 (시간 입력 / 결과 탭)
+│   │   ├── TimeGrid.jsx        # 드래그 선택 그리드 + 히트맵
 │   │   ├── ResultsView.jsx     # 히트맵 결과 + 추천 시간대 카드
-│   │   ├── Layout.jsx          # 공통 네비게이션 + 푸터
-│   │   └── ThemeToggle.jsx     # 다크/라이트 전환 버튼
+│   │   ├── FeedbackModal.jsx   # 인앱 피드백 모달 (EmailJS)
+│   │   ├── DatePicker.jsx      # 날짜 선택 컴포넌트
+│   │   └── Layout.jsx          # 공통 네비게이션 (PC 상단바 / 모바일 탭바)
 │   ├── context/
-│   │   └── ThemeContext.jsx    # 테마 전역 상태 (Context API)
+│   │   └── ThemeContext.jsx    # 다크/라이트 테마 전역 상태
 │   ├── lib/
-│   │   └── supabase.js         # Supabase 클라이언트 (미설정 시 mock 반환)
+│   │   └── supabase.js         # Supabase 클라이언트
 │   ├── utils/
 │   │   └── timeUtils.js        # 슬롯 생성, 히트맵 분석, 최적 시간 탐색
-│   ├── App.jsx                 # 라우트 정의
-│   ├── main.jsx                # 앱 엔트리포인트
-│   └── index.css               # Tailwind directives + 커스텀 컴포넌트
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css               # Tailwind + 커스텀 컴포넌트 스타일 (CSS 변수 포함)
 ├── .env.example                # 환경변수 템플릿
 ├── .gitignore
 ├── index.html
 ├── package.json
-├── postcss.config.js
 ├── tailwind.config.js
-└── vite.config.js              # base URL 설정 포함
+└── vite.config.js
 ```
 
 ---
 
 ## 로컬 개발 환경 설정
 
-### 1. 의존성 설치
+### 1. Node.js 설치
+
+[nodejs.org](https://nodejs.org) → **LTS** 버전 설치 (npm 포함)
+
+```bash
+node -v  # 설치 확인
+npm -v
+```
+
+### 2. 의존성 설치
 
 ```bash
 npm install
 ```
 
-### 2. 환경변수 설정
+### 3. 환경변수 설정
 
+`.env.example`을 복사해 `.env` 파일을 만들고 실제 값을 입력합니다:
+
+**Mac/Linux**
 ```bash
 cp .env.example .env
 ```
 
-`.env` 파일을 열고 Supabase 값을 입력합니다 (아래 [Supabase 설정](#supabase-설정) 참고):
+**Windows**
+```bash
+copy .env.example .env
+```
 
+`.env` 파일 내용:
 ```env
 VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_ANON_KEY
-VITE_BASE_URL=/when2work/
+VITE_BASE_URL=/
+VITE_EMAILJS_SERVICE_ID=YOUR_SERVICE_ID
+VITE_EMAILJS_TEMPLATE_ID=YOUR_TEMPLATE_ID
+VITE_EMAILJS_PUBLIC_KEY=YOUR_PUBLIC_KEY
 ```
 
-### 3. 개발 서버 실행
+### 4. 개발 서버 실행
 
 ```bash
 npm run dev
@@ -140,39 +162,27 @@ create table availability (
 alter table rooms enable row level security;
 alter table availability enable row level security;
 
-create policy "public read rooms"        on rooms        for select using (true);
-create policy "public insert rooms"      on rooms        for insert with check (true);
-create policy "public delete rooms"      on rooms        for delete using (true);
-create policy "public read availability" on availability for select using (true);
+create policy "public read rooms"          on rooms        for select using (true);
+create policy "public insert rooms"        on rooms        for insert with check (true);
+create policy "public delete rooms"        on rooms        for delete using (true);
+create policy "public read availability"   on availability for select using (true);
 create policy "public insert availability" on availability for insert with check (true);
 create policy "public update availability" on availability for update using (true);
 
 -- 10일 지난 방 자동 삭제 함수
 create or replace function delete_old_rooms()
-returns void
-language plpgsql
-security definer
-as $$
+returns void language plpgsql security definer as $$
 begin
-  delete from rooms
-  where created_at < now() - interval '10 days';
+  delete from rooms where created_at < now() - interval '10 days';
 end;
 $$;
-
--- 매일 자정에 자동 삭제 실행 (Supabase Cron 사용)
--- Database → Cron Jobs 메뉴에서 추가:
--- Name: delete_old_rooms
--- Schedule: 0 0 * * * (매일 자정)
--- SQL: select delete_old_rooms();
 ```
 
-### 4. Cron Job 설정 (자동 삭제)
+### 3. Cron Job 설정 (자동 삭제)
 
-Supabase 대시보드 → **Database** → **Extensions**에서 `pg_cron` 활성화 후,
-**SQL Editor**에서 다음 쿼리 실행:
+Supabase 대시보드 → **Database → Extensions**에서 `pg_cron` 활성화 후 실행:
 
 ```sql
--- Cron Job 생성 (매일 자정에 실행)
 select cron.schedule(
   'delete-old-rooms',
   '0 0 * * *',
@@ -180,19 +190,7 @@ select cron.schedule(
 );
 ```
 
-> 10일 지난 방은 매일 자정에 자동으로 삭제됩니다. 기간을 변경하려면 위 SQL 함수의 `interval '10 days'` 부분을 수정하세요.
-
-**Cron Job 확인:**
-```sql
-select * from cron.job;
-```
-
-**Cron Job 삭제 (필요시):**
-```sql
-select cron.unschedule('delete-old-rooms');
-```
-
-### 5. API 키 확인
+### 4. API 키 확인
 
 **Project Settings → API** 메뉴에서 복사:
 
@@ -203,54 +201,54 @@ select cron.unschedule('delete-old-rooms');
 
 ---
 
+## EmailJS 설정 (피드백 기능)
+
+### 1. 계정 및 서비스 생성
+
+[emailjs.com](https://emailjs.com) → 회원가입 → **Email Services**에서 Gmail 등 연결
+
+### 2. 템플릿 생성
+
+**Email Templates → Create New Template** 후 아래 변수 사용:
+
+| 변수 | 내용 |
+|------|------|
+| `{{feedback_type}}` | 피드백 유형 (개선사항 / 버그 제보 / 기타) |
+| `{{feedback_message}}` | 피드백 내용 |
+| `{{contact}}` | 연락처 (선택 입력) |
+
+### 3. API 키 확인
+
+**Account → General**에서 Public Key 복사 후 `.env`에 입력
+
+---
+
 ## GitHub Pages 배포
 
-### 1. 레포지토리 생성 및 푸시
+### 1. GitHub Secrets 등록
 
-```bash
-git init
-git add .
-git commit -m "initial commit"
-git remote add origin https://github.com/YOUR_ID/when2work.git
-git push -u origin main
-```
-
-### 2. GitHub Secrets 등록
-
-레포지토리 → **Settings → Secrets and variables → Actions → New repository secret**:
+레포지토리 → **Settings → Secrets and variables → Actions**:
 
 | Secret 이름 | 값 |
 |-------------|----|
 | `VITE_SUPABASE_URL` | Supabase Project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
+| `VITE_EMAILJS_SERVICE_ID` | EmailJS Service ID |
+| `VITE_EMAILJS_TEMPLATE_ID` | EmailJS Template ID |
+| `VITE_EMAILJS_PUBLIC_KEY` | EmailJS Public Key |
 
-### 3. GitHub Pages 활성화
+### 2. GitHub Pages 활성화
 
 레포지토리 → **Settings → Pages → Source** → **GitHub Actions** 선택
 
 이후 `main` 브랜치에 push할 때마다 자동 배포됩니다.
 
-### 4. 레포 이름이 `when2work`가 아닌 경우
+### 3. 레포 이름이 `When2Work`가 아닌 경우
 
-**`vite.config.js`** 의 base URL을 수정합니다:
-
-```js
-// vite.config.js
-export default defineConfig({
-  plugins: [react()],
-  base: process.env.NODE_ENV === 'production'
-    ? (process.env.VITE_BASE_URL || '/여기에-레포-이름/')  // ← 수정
-    : '/',
-})
-```
-
-또는 `.github/workflows/deploy.yml` 내 `VITE_BASE_URL` 값을 수정합니다:
+`.github/workflows/deploy.yml`의 `VITE_BASE_URL` 값을 수정합니다:
 
 ```yaml
-# .github/workflows/deploy.yml
-- name: Build
-  env:
-    VITE_BASE_URL: /your-repo-name/   # ← 수정
+VITE_BASE_URL: /your-repo-name/
 ```
 
 ---
@@ -259,23 +257,22 @@ export default defineConfig({
 
 ```
 1. 방 만들기
-   └─ 제목, 날짜 범위(~7일), 시간 범위 설정 → 방 생성
+   └─ 제목, 날짜 범위(~7일), 시간 범위(00:00~24:00) 설정 → 방 생성
 
 2. 링크 공유
-   └─ 생성된 URL을 팀원들에게 전달
+   └─ 링크 복사 버튼으로 팀원들에게 전달
 
 3. 각자 시간 입력
    └─ 이름 입력 → 드래그로 가능한 시간 선택 → 저장
-   └─ 선택 초기화 버튼으로 쉽게 재선택 가능
+   └─ 초기화 버튼으로 재선택 가능
 
 4. 결과 확인
    └─ "결과 보기" 탭에서 히트맵 확인
-   └─ 겹치는 시간대를 정확히 분석한 추천 시간대 확인
-   └─ 최적 시간대는 별(★) 표시로 강조
+   └─ AI 추천 시간대 카드 (★ = 최적 시간)
 
 5. 방 관리
-   └─ 필요시 휴지통 버튼으로 즉시 삭제
-   └─ 10일 지난 방은 자동 삭제
+   └─ 휴지통 버튼으로 즉시 삭제
+   └─ 10일 후 자동 삭제
 ```
 
 ---
@@ -287,47 +284,6 @@ npm run dev      # 개발 서버 (localhost:5173)
 npm run build    # 프로덕션 빌드 → dist/
 npm run preview  # 빌드 결과 미리보기
 ```
-
----
-
-## 커스텀 도메인 설정 (선택사항)
-
-GitHub Pages 기본 도메인 대신 자신의 도메인을 사용할 수 있습니다.
-
-### 1. DNS 설정 (도메인 제공업체)
-
-**서브도메인 사용 시** (예: `when2work.yourdomain.com`):
-```
-타입: CNAME
-호스트: when2work
-값: YOUR_GITHUB_USERNAME.github.io.
-```
-
-**루트 도메인 사용 시** (예: `yourdomain.com`):
-```
-타입: A
-호스트: @
-값: 185.199.108.153
-     185.199.109.153
-     185.199.110.153
-     185.199.111.153
-```
-
-### 2. GitHub Pages 설정
-
-- Settings → Pages → Custom domain에 도메인 입력
-- DNS 체크 완료되면 Enforce HTTPS 활성화
-
-### 3. CNAME 파일
-
-`public/CNAME` 파일에 도메인 입력:
-```
-when2work.yourdomain.com
-```
-
-### 4. Base URL 설정
-
-커스텀 도메인 사용 시 `.env.local`과 `.github/workflows/deploy.yml`의 `VITE_BASE_URL`을 `/`로 설정 (이미 설정됨)
 
 ---
 

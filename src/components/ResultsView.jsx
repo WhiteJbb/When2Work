@@ -2,9 +2,12 @@ import { useState } from 'react'
 import { Users, Clock3, Star } from 'lucide-react'
 import TimeGrid from './TimeGrid'
 import { buildHeatmap, findBestSlots, formatDateFull } from '../utils/timeUtils'
+import { useTheme } from '../context/ThemeContext'
 
 export default function ResultsView({ room, availabilities }) {
   const [hoveredSlot, setHoveredSlot] = useState(null)
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
 
   const heatmap = buildHeatmap(availabilities)
   const bestSlots = findBestSlots(heatmap, availabilities, 5, 2)
@@ -16,7 +19,7 @@ export default function ResultsView({ room, availabilities }) {
 
       {/* ── 참여자 ── */}
       <div className="card p-4">
-        <p className="font-extrabold text-base mb-3 flex items-center gap-1.5" style={{ color:'#111' }}>
+        <p className="font-extrabold text-base mb-3 flex items-center gap-1.5 text-[#111] dark:text-[#e4e4e7]">
           <Users className="w-4 h-4" style={{ color:'#0ecfb0' }} /> 참여자 <span style={{ color:'#0ecfb0' }}>{totalCount}명</span>
         </p>
         {availabilities.length === 0 ? (
@@ -76,24 +79,25 @@ export default function ResultsView({ room, availabilities }) {
               <div key={`${slot.date}-${slot.startTime}-${i}`}
                 className="card p-4 flex items-center gap-4"
                 style={slot.isHighlighted ? {
-                  border: '2px solid #a8f2e4', background: '#edfdf8',
-                  boxShadow: '0 4px 16px rgba(14,207,176,0.15)'
+                  border: `2px solid ${isDark ? '#1a4a44' : '#a8f2e4'}`,
+                  background: isDark ? '#0f2e2a' : '#edfdf8',
+                  boxShadow: '0 4px 16px rgba(14,207,176,0.12)'
                 } : {}}
               >
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-extrabold flex-shrink-0"
                   style={
                     slot.isHighlighted
-                      ? { background: '#0ecfb0', color: '#fff', boxShadow: '0 4px 12px rgba(14,207,176,0.4)' }
+                      ? { background: 'var(--brand)', color: '#fff', boxShadow: '0 4px 12px var(--brand-shadow)' }
                       : i === 0
                       ? { background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', boxShadow: '0 4px 12px rgba(245,158,11,0.35)' }
-                      : { background: '#f5f5f5', color: '#aaa', border: '1.5px solid #ebebeb' }
+                      : { background: isDark ? '#2c2c35' : '#f5f5f5', color: '#aaa', border: `1.5px solid ${isDark ? '#3a3a45' : '#ebebeb'}` }
                   }
                 >
                   {slot.isHighlighted ? '★' : i+1}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="font-extrabold text-sm" style={{ color:'#111' }}>{formatDateFull(slot.date)}</p>
+                  <p className="font-extrabold text-sm text-[#111] dark:text-[#e4e4e7]">{formatDateFull(slot.date)}</p>
                   <p className="text-xs font-semibold mt-0.5" style={{ color:'#bbb' }}>
                     {slot.startTime} ~ {slot.endTime} · {slot.durationMins}분
                   </p>

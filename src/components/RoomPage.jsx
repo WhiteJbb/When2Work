@@ -101,17 +101,18 @@ export default function RoomPage() {
           <h1 className="section-title leading-tight flex-1 min-w-0 truncate">{room.title}</h1>
           <div className="flex gap-1.5 flex-shrink-0 mt-1">
             <button onClick={handleCopy}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold transition-all active:scale-95"
-              style={{ borderRadius: '999px',
-                background: copied ? '#edfdf8' : '#f5f5f5',
-                color: copied ? '#0ecfb0' : '#888',
-                border: `1.5px solid ${copied ? '#a8f2e4' : '#ebebeb'}` }}
+              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-bold transition-all active:scale-95 ${
+                copied
+                  ? 'bg-[#edfdf8] dark:bg-[#0f2e2a] text-[#0ecfb0] dark:text-[#0ab8a0] border border-[#a8f2e4] dark:border-[#1a4a44]'
+                  : 'bg-[#f5f5f5] dark:bg-[#2c2c35] text-[#888] dark:text-[#777] border border-[#ebebeb] dark:border-[#3a3a45]'
+              }`}
+              style={{ borderRadius: '999px' }}
             >
-              {copied ? <><Check className="w-3 h-3"/>복사됨</> : <><Copy className="w-3 h-3"/>링크</>}
+              {copied ? <><Check className="w-3.5 h-3.5"/>복사됨</> : <><Copy className="w-3.5 h-3.5"/>링크 복사</>}
             </button>
             <button onClick={() => setShowDeleteConfirm(true)}
-              className="w-8 h-8 flex items-center justify-center active:scale-95 transition-all"
-              style={{ borderRadius: '999px', background: '#fff1f2', color: '#e11d48', border: '1.5px solid #fecdd3' }}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold active:scale-95 transition-all bg-[#fff1f2] dark:bg-[#2d1a1d] text-[#e11d48] border border-[#fecdd3] dark:border-[#4a2028]"
+              style={{ borderRadius: '999px' }}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -120,16 +121,16 @@ export default function RoomPage() {
 
         {/* 정보 태그 */}
         <div className="flex flex-wrap gap-1.5 mt-2">
-          <span className="text-xs font-bold px-2.5 py-1 flex items-center gap-1"
-            style={{ borderRadius:'999px', background:'#edfdf8', color:'#0ecfb0', border:'1.5px solid #a8f2e4' }}>
+          <span className="text-xs font-bold px-2.5 py-1 flex items-center gap-1 bg-[#edfdf8] dark:bg-[#0f2e2a] text-[#0ecfb0] dark:text-[#0ab8a0] border border-[#a8f2e4] dark:border-[#1a4a44]"
+            style={{ borderRadius:'999px' }}>
             <CalendarDays className="w-3 h-3" /> {room.dates[0]} ~ {room.dates[room.dates.length-1]}
           </span>
-          <span className="text-xs font-bold px-2.5 py-1 flex items-center gap-1"
-            style={{ borderRadius:'999px', background:'#f5f5f5', color:'#888', border:'1.5px solid #ebebeb' }}>
+          <span className="text-xs font-bold px-2.5 py-1 flex items-center gap-1 bg-[#f5f5f5] dark:bg-[#2c2c35] text-[#888] dark:text-[#666] border border-[#ebebeb] dark:border-[#3a3a45]"
+            style={{ borderRadius:'999px' }}>
             <Clock3 className="w-3 h-3" /> {room.time_start}:00 ~ {room.time_end}:00
           </span>
-          <span className="text-xs font-bold px-2.5 py-1 flex items-center gap-1"
-            style={{ borderRadius:'999px', background:'#f5f5f5', color:'#888', border:'1.5px solid #ebebeb' }}>
+          <span className="text-xs font-bold px-2.5 py-1 flex items-center gap-1 bg-[#f5f5f5] dark:bg-[#2c2c35] text-[#888] dark:text-[#666] border border-[#ebebeb] dark:border-[#3a3a45]"
+            style={{ borderRadius:'999px' }}>
             <Users className="w-3 h-3" /> {availabilities.length}명 응답
           </span>
         </div>
@@ -143,13 +144,15 @@ export default function RoomPage() {
         ].map(t => (
           <button key={t.id}
             onClick={() => { setTab(t.id); if (t.id === 'results') loadAvailabilities() }}
-            className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-extrabold transition-all active:scale-95"
+            className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-extrabold transition-all active:scale-95 ${
+              tab === t.id
+                ? 'text-white'
+                : 'bg-[#f5f5f5] dark:bg-[#2c2c35] text-[#aaa] dark:text-[#666] border border-[#ebebeb] dark:border-[#3a3a45]'
+            }`}
             style={tab === t.id ? {
-              borderRadius: '999px', background: '#0ecfb0', color: '#fff',
-              boxShadow: '0 4px 14px rgba(14,207,176,0.4)',
-            } : {
-              borderRadius: '999px', background: '#f5f5f5', color: '#aaa', border: '1.5px solid #ebebeb',
-            }}
+              borderRadius: '999px', background: 'var(--brand)',
+              boxShadow: '0 4px 14px var(--brand-shadow)',
+            } : { borderRadius: '999px' }}
           >
             {t.icon && <t.icon className="w-3.5 h-3.5" />}
             {t.label}

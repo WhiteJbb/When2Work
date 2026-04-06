@@ -3,7 +3,21 @@
 @tailwind utilities;
 
 @layer base {
-  :root { color-scheme: light dark; }
+  :root {
+    color-scheme: light dark;
+    --brand: #0ecfb0;
+    --brand-hover: #0ab89c;
+    --brand-shadow: rgba(14,207,176,0.4);
+    --brand-bg: #edfdf8;
+    --brand-border: #a8f2e4;
+  }
+  .dark {
+    --brand: #0ab8a0;
+    --brand-hover: #099e8a;
+    --brand-shadow: rgba(10,184,160,0.3);
+    --brand-bg: #0f2e2a;
+    --brand-border: #1a4a44;
+  }
   * { -webkit-tap-highlight-color: transparent; }
 
   body {
@@ -11,7 +25,7 @@
     background: #ffffff;
     color: #111111;
   }
-  .dark body { background: #111111; color: #f2f2f7; }
+  .dark body { background: #18181b; color: #e4e4e7; }
 
   ::-webkit-scrollbar { width: 0; height: 0; }
 }
@@ -24,12 +38,12 @@
            transition-all duration-150 active:scale-95 active:brightness-90
            focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100;
     border-radius: 999px;
-    background: #0ecfb0;
-    box-shadow: 0 4px 16px rgba(14,207,176,0.4);
+    background: var(--brand);
+    box-shadow: 0 4px 16px var(--brand-shadow);
   }
   .btn-primary:hover:not(:disabled) {
-    background: #0ab89c;
-    box-shadow: 0 6px 20px rgba(14,207,176,0.5);
+    background: var(--brand-hover);
+    box-shadow: 0 6px 20px var(--brand-shadow);
   }
 
   .btn-secondary {
@@ -52,7 +66,7 @@
     border: 1.5px solid #f0f0f0;
     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   }
-  .dark .card { background: #1e1e1e; border-color: #2a2a2a; box-shadow: none; }
+  .dark .card { background: #232329; border-color: #2e2e36; box-shadow: none; }
 
   .input {
     @apply w-full px-4 py-3 font-semibold transition-all duration-150 focus:outline-none;
@@ -71,9 +85,12 @@
   select.input { border-radius: 16px; }
   textarea.input { border-radius: 20px; }
 
-  .dark .input { background: #2a2a2a; color: #f2f2f7; }
-  .dark .input::placeholder { color: #555; }
-  .dark .input:focus { background: #333; border-color: #0ecfb0; }
+  .dark .input { background: #2c2c35; color: #e4e4e7; }
+  .dark .input::placeholder { color: #52525b; }
+  .dark .input:focus { background: #313140; border-color: var(--brand); }
+
+  .modal-sheet { border-radius: 28px 28px 0 0; }
+  @media (min-width: 640px) { .modal-sheet { border-radius: 28px; } }
 
   .label {
     @apply block text-xs font-extrabold mb-1.5 tracking-widest uppercase;
@@ -84,7 +101,7 @@
   /* 섹션 타이틀 */
   .section-sub { @apply text-xs font-semibold; color: #aaaaaa; }
   .section-title { @apply text-xl font-extrabold tracking-tight; color: #111111; }
-  .dark .section-title { color: #f2f2f7; }
+  .dark .section-title { color: #e4e4e7; }
 }
 
 @layer utilities {
