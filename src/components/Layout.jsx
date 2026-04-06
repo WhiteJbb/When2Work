@@ -29,7 +29,16 @@ export default function Layout({ children }) {
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 py-4 text-center
                           text-xs text-slate-400 dark:text-slate-600">
-        When2Work — 팀 일정 조율 도구
+        <span>When2Work — 팀 일정 조율 도구</span>
+        <span className="mx-2">·</span>
+        <a
+          href="https://github.com/WhiteJbb/When2Work/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-brand-500 dark:hover:text-brand-400 transition-colors underline underline-offset-2"
+        >
+          개선사항 / 버그 제보
+        </a>
       </footer>
     </div>
   )
