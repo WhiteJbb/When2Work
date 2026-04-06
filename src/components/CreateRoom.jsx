@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AlertCircle } from 'lucide-react'
+import {
+  AlertCircle, Calendar, CalendarDays, Clock, Link2,
+  CheckCircle2, ArrowRight, Hash, PenLine, Loader2
+} from 'lucide-react'
 import DatePicker from './DatePicker'
 import { createRoom, isSupabaseConfigured } from '../lib/supabase'
 import { generateDateRange } from '../utils/timeUtils'
@@ -11,6 +14,12 @@ const TIME_OPTIONS = [
     label: i === 0 ? '자정 (00:00)' : i < 12 ? `오전 ${i}시` : i === 12 ? '정오 (12:00)' : `오후 ${i - 12}시`,
   })),
   { value: 24, label: '오후 11:59 (자정 직전)' },
+]
+
+const STEPS = [
+  { icon: CalendarDays, title: '방 만들기',  desc: '날짜 범위와 시간대를 설정해서 방을 생성해요.' },
+  { icon: Link2,        title: '링크 공유',  desc: '생성된 링크를 팀원들에게 보내요.' },
+  { icon: CheckCircle2, title: '결과 확인',  desc: '모두가 가능한 최적의 시간을 확인해요.' },
 ]
 
 export default function CreateRoom() {
@@ -48,7 +57,7 @@ export default function CreateRoom() {
   const FormContent = (
     <div className="space-y-4">
       <div>
-        <label className="label">📌 회의 제목</label>
+        <label className="label"><PenLine className="w-3 h-3 inline mr-1" />회의 제목</label>
         <input type="text" className="input" placeholder="Ex) 프로젝트 킥오프 미팅"
           value={form.title} onChange={e => setForm(f => ({...f, title: e.target.value}))} maxLength={60}
         />
@@ -56,11 +65,11 @@ export default function CreateRoom() {
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label">📅 시작 날짜</label>
+          <label className="label"><Calendar className="w-3 h-3 inline mr-1" />시작 날짜</label>
           <DatePicker value={form.startDate} minDate={todayStr()} onChange={val => setForm(f => ({...f, startDate: val}))} />
         </div>
         <div>
-          <label className="label">📆 날짜 수</label>
+          <label className="label"><Hash className="w-3 h-3 inline mr-1" />날짜 수</label>
           <select className="input" value={form.numDays} onChange={e => setForm(f => ({...f, numDays: Number(e.target.value)}))}>
             {[1,2,3,4,5,6,7].map(n => <option key={n} value={n}>{n}일</option>)}
           </select>
@@ -89,13 +98,13 @@ export default function CreateRoom() {
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label">🕘 시작 시간</label>
+          <label className="label"><Clock className="w-3 h-3 inline mr-1" />시작 시간</label>
           <select className="input" value={form.startHour} onChange={e => setForm(f => ({...f, startHour: Number(e.target.value)}))}>
             {TIME_OPTIONS.slice(0,24).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
         <div>
-          <label className="label">🕙 종료 시간</label>
+          <label className="label"><Clock className="w-3 h-3 inline mr-1" />종료 시간</label>
           <select className="input" value={form.endHour} onChange={e => setForm(f => ({...f, endHour: Number(e.target.value)}))}>
             {TIME_OPTIONS.slice(1).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
@@ -113,7 +122,7 @@ export default function CreateRoom() {
       <button onClick={handleSubmit} className="btn-primary w-full py-4 text-base"
         disabled={loading || !isSupabaseConfigured}
       >
-        {loading ? '생성 중...' : '방 만들기 🚀'}
+        {loading ? <><Loader2 className="w-4 h-4 animate-spin" />생성 중...</> : <>방 만들기<ArrowRight className="w-4 h-4" /></>}
       </button>
     </div>
   )
@@ -121,9 +130,7 @@ export default function CreateRoom() {
   return (
     <div className="pb-4">
 
-      {/* ══════════════════════════════════
-          PC 레이아웃 (md 이상)
-      ══════════════════════════════════ */}
+      {/* ── PC 레이아웃 ── */}
       <div className="hidden md:block pt-12">
         <div className="grid gap-12 items-start" style={{ gridTemplateColumns: '1fr 1fr' }}>
 
@@ -131,7 +138,7 @@ export default function CreateRoom() {
           <div className="flex flex-col h-full">
             <p className="section-sub mb-2">Team Scheduler</p>
             <h1 className="text-5xl font-extrabold tracking-tight leading-tight mb-4" style={{ color: '#111' }}>
-              언제 모일 수<br />있나요? 🗓️
+              언제 모일 수<br />있나요?
             </h1>
             <p className="text-base font-medium mb-8" style={{ color: '#aaa' }}>
               방을 만들고 팀원에게 링크를 공유하세요.<br />
@@ -148,7 +155,10 @@ export default function CreateRoom() {
               <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
               <div className="absolute -bottom-4 -left-4 w-28 h-28 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }} />
               <div className="relative z-10">
-                <p className="text-5xl mb-4">🗓️</p>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+                  style={{ background: 'rgba(255,255,255,0.25)' }}>
+                  <CalendarDays className="w-6 h-6 text-white" />
+                </div>
                 <p className="font-extrabold text-white text-2xl leading-tight">팀 일정 조율,<br />더 쉽게</p>
                 <p className="text-white/70 text-sm font-semibold mt-2">링크 하나로 모두의 가능 시간 수집</p>
               </div>
@@ -156,13 +166,12 @@ export default function CreateRoom() {
 
             {/* 스텝 */}
             <div className="space-y-3 flex-1">
-              {[
-                { step:'01', title:'방 만들기', desc:'날짜 범위와 시간대를 설정해서 방을 생성해요.' },
-                { step:'02', title:'링크 공유', desc:'생성된 링크를 팀원들에게 보내요.' },
-                { step:'03', title:'결과 확인', desc:'모두가 가능한 최적의 시간을 확인해요.' },
-              ].map((s, i) => (
+              {STEPS.map((s, i) => (
                 <div key={i} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: '#f9f9f9' }}>
-                  <span className="text-base font-extrabold w-9 flex-shrink-0" style={{ color: '#0ecfb0' }}>{s.step}</span>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: '#edfdf8', border: '1.5px solid #a8f2e4' }}>
+                    <s.icon className="w-4 h-4" style={{ color: '#0ecfb0' }} />
+                  </div>
                   <div>
                     <p className="font-extrabold text-base" style={{ color: '#111' }}>{s.title}</p>
                     <p className="text-sm font-medium mt-0.5" style={{ color: '#aaa' }}>{s.desc}</p>
@@ -174,7 +183,13 @@ export default function CreateRoom() {
 
           {/* 오른쪽: 인라인 폼 */}
           <div className="card p-8">
-            <p className="font-extrabold text-xl mb-6" style={{ color: '#111' }}>🗓️ 방 만들기</p>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{ background: '#edfdf8', border: '1.5px solid #a8f2e4' }}>
+                <CalendarDays className="w-4 h-4" style={{ color: '#0ecfb0' }} />
+              </div>
+              <p className="font-extrabold text-xl" style={{ color: '#111' }}>방 만들기</p>
+            </div>
             {!isSupabaseConfigured && (
               <div className="mb-4 p-3 rounded-2xl flex gap-2"
                 style={{ background: '#fffbeb', border: '1.5px solid #fde68a' }}
@@ -188,9 +203,7 @@ export default function CreateRoom() {
         </div>
       </div>
 
-      {/* ══════════════════════════════════
-          모바일 레이아웃 (md 미만)
-      ══════════════════════════════════ */}
+      {/* ── 모바일 레이아웃 ── */}
       <div className="md:hidden">
         <div className="pt-2 pb-6">
           <p className="section-sub mb-1">Team Scheduler</p>
@@ -219,7 +232,10 @@ export default function CreateRoom() {
             <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
             <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }} />
             <div className="relative z-10 h-full flex flex-col justify-between">
-              <div className="text-3xl mb-2">🗓️</div>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ background: 'rgba(255,255,255,0.25)' }}>
+                <CalendarDays className="w-5 h-5 text-white" />
+              </div>
               <div>
                 <p className="font-extrabold text-white text-base leading-tight">방 만들기</p>
                 <p className="text-white/70 text-xs font-semibold mt-1">날짜·시간 설정 후 팀원 초대</p>
@@ -229,14 +245,20 @@ export default function CreateRoom() {
 
           <div className="col-span-2 flex flex-col gap-3">
             <div className="card flex-1 p-4 flex flex-col justify-between">
-              <div className="text-2xl">🔗</div>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{ background: '#edfdf8', border: '1.5px solid #a8f2e4' }}>
+                <Link2 className="w-4 h-4" style={{ color: '#0ecfb0' }} />
+              </div>
               <div>
                 <p className="font-extrabold text-sm" style={{ color: '#111' }}>링크 공유</p>
                 <p className="text-xs font-medium mt-0.5" style={{ color: '#aaa' }}>팀원에게 전달</p>
               </div>
             </div>
             <div className="card flex-1 p-4 flex flex-col justify-between">
-              <div className="text-2xl">✅</div>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{ background: '#edfdf8', border: '1.5px solid #a8f2e4' }}>
+                <CheckCircle2 className="w-4 h-4" style={{ color: '#0ecfb0' }} />
+              </div>
               <div>
                 <p className="font-extrabold text-sm" style={{ color: '#111' }}>결과 확인</p>
                 <p className="text-xs font-medium mt-0.5" style={{ color: '#aaa' }}>최적 시간 발견</p>
@@ -247,20 +269,15 @@ export default function CreateRoom() {
 
         {/* 이용 방법 */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="section-sub">When2Work 소개</p>
-              <p className="section-title text-lg">이렇게 사용해요</p>
-            </div>
-          </div>
+          <p className="section-sub mb-1">When2Work 소개</p>
+          <p className="section-title text-lg mb-3">이렇게 사용해요</p>
           <div className="card p-4 space-y-3">
-            {[
-              { step:'01', title:'방 만들기', desc:'날짜 범위와 시간대를 설정해서 방을 생성해요.' },
-              { step:'02', title:'링크 공유', desc:'생성된 링크를 팀원들에게 보내요.' },
-              { step:'03', title:'결과 확인', desc:'모두가 가능한 최적의 시간을 확인해요.' },
-            ].map((s, i) => (
+            {STEPS.map((s, i) => (
               <div key={i} className="flex items-center gap-3">
-                <span className="text-xs font-extrabold w-7 flex-shrink-0" style={{ color: '#0ecfb0' }}>{s.step}</span>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: '#edfdf8', border: '1.5px solid #a8f2e4' }}>
+                  <s.icon className="w-3.5 h-3.5" style={{ color: '#0ecfb0' }} />
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-extrabold text-sm" style={{ color: '#111' }}>{s.title}</p>
                   <p className="text-xs font-medium mt-0.5" style={{ color: '#aaa' }}>{s.desc}</p>
@@ -281,7 +298,13 @@ export default function CreateRoom() {
             >
               <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full" style={{ background: '#e0e0e0' }} />
               <div className="flex items-center justify-between mb-5">
-                <p className="font-extrabold text-lg" style={{ color: '#111' }}>🗓️ 방 만들기</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl flex items-center justify-center"
+                    style={{ background: '#edfdf8', border: '1.5px solid #a8f2e4' }}>
+                    <CalendarDays className="w-3.5 h-3.5" style={{ color: '#0ecfb0' }} />
+                  </div>
+                  <p className="font-extrabold text-lg" style={{ color: '#111' }}>방 만들기</p>
+                </div>
                 <button onClick={() => setShowForm(false)}
                   className="w-8 h-8 flex items-center justify-center rounded-full active:scale-90"
                   style={{ background: '#f5f5f5', color: '#888', fontSize: '18px' }}
@@ -292,7 +315,6 @@ export default function CreateRoom() {
           </div>
         )}
       </div>
-
     </div>
   )
 }

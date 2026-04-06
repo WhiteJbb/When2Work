@@ -18,7 +18,7 @@ export default function Layout({ children }) {
       <header className="hidden md:block sticky top-0 z-40 bg-white dark:bg-[#111]"
         style={{ borderBottom: '1.5px solid #f0f0f0' }}
       >
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-10 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-75 transition-opacity">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-extrabold"
               style={{ background: 'linear-gradient(135deg, #34d5b7, #0ecfb0)', boxShadow: '0 3px 10px rgba(14,207,176,0.35)' }}
@@ -97,9 +97,8 @@ export default function Layout({ children }) {
               borderRadius: '999px',
               background: 'linear-gradient(135deg, #34d5b7, #0ecfb0)',
               boxShadow: '0 4px 20px rgba(14,207,176,0.45)',
-              fontSize: '22px',
             }}
-          >💬</button>
+          ><MessageSquarePlus className="w-6 h-6" /></button>
 
           <span className="w-14" />
 

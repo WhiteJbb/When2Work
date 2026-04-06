@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Users, Clock3, Star } from 'lucide-react'
 import TimeGrid from './TimeGrid'
 import { buildHeatmap, findBestSlots, formatDateFull } from '../utils/timeUtils'
 
@@ -15,8 +16,8 @@ export default function ResultsView({ room, availabilities }) {
 
       {/* ── 참여자 ── */}
       <div className="card p-4">
-        <p className="font-extrabold text-base mb-3" style={{ color:'#111' }}>
-          👥 참여자 <span style={{ color:'#0ecfb0' }}>{totalCount}명</span>
+        <p className="font-extrabold text-base mb-3 flex items-center gap-1.5" style={{ color:'#111' }}>
+          <Users className="w-4 h-4" style={{ color:'#0ecfb0' }} /> 참여자 <span style={{ color:'#0ecfb0' }}>{totalCount}명</span>
         </p>
         {availabilities.length === 0 ? (
           <p className="text-sm font-medium" style={{ color:'#bbb' }}>아직 응답자가 없습니다.</p>
@@ -58,7 +59,7 @@ export default function ResultsView({ room, availabilities }) {
         />
       ) : (
         <div className="card p-10 text-center">
-          <p className="text-4xl mb-3">🕐</p>
+          <Clock3 className="w-10 h-10 mx-auto mb-3" style={{ color: '#ddd' }} />
           <p className="text-sm font-semibold" style={{ color:'#bbb' }}>아직 입력한 참여자가 없습니다.</p>
         </div>
       )}
@@ -68,7 +69,7 @@ export default function ResultsView({ room, availabilities }) {
         <div>
           <div className="mb-3 px-1">
             <p className="section-sub">AI 추천</p>
-            <p className="section-title text-lg">추천 시간대 ⭐</p>
+            <p className="section-title text-lg flex items-center gap-1.5">추천 시간대 <Star className="w-4 h-4" style={{ color:'#f59e0b' }} /></p>
           </div>
           <div className="space-y-2.5">
             {bestSlots.map((slot, i) => (

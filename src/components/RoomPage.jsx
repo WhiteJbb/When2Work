@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Copy, Check, RefreshCw, Save, BarChart2, Calendar, AlertCircle, Loader2, Trash2 } from 'lucide-react'
+import { Copy, Check, RefreshCw, Save, CalendarDays, Clock3, Users, AlertCircle, Loader2, Trash2, Frown, Timer, BarChart2 } from 'lucide-react'
 import { getRoom, getAvailabilities, upsertAvailability, deleteRoom } from '../lib/supabase'
 import TimeGrid from './TimeGrid'
 import ResultsView from './ResultsView'
@@ -84,7 +84,7 @@ export default function RoomPage() {
 
   if (error || !room) return (
     <div className="max-w-md mx-auto text-center py-16">
-      <p className="text-5xl mb-4">😕</p>
+      <Frown className="w-12 h-12 mx-auto mb-4" style={{ color: '#ccc' }} />
       <h2 className="text-xl font-extrabold mb-2">방을 찾을 수 없어요</h2>
       <p className="text-sm font-medium mb-6" style={{ color: '#aaa' }}>{error}</p>
       <a href="/" className="btn-primary">홈으로 돌아가기</a>
@@ -120,17 +120,17 @@ export default function RoomPage() {
 
         {/* 정보 태그 */}
         <div className="flex flex-wrap gap-1.5 mt-2">
-          <span className="text-xs font-bold px-2.5 py-1"
+          <span className="text-xs font-bold px-2.5 py-1 flex items-center gap-1"
             style={{ borderRadius:'999px', background:'#edfdf8', color:'#0ecfb0', border:'1.5px solid #a8f2e4' }}>
-            📅 {room.dates[0]} ~ {room.dates[room.dates.length-1]}
+            <CalendarDays className="w-3 h-3" /> {room.dates[0]} ~ {room.dates[room.dates.length-1]}
           </span>
-          <span className="text-xs font-bold px-2.5 py-1"
+          <span className="text-xs font-bold px-2.5 py-1 flex items-center gap-1"
             style={{ borderRadius:'999px', background:'#f5f5f5', color:'#888', border:'1.5px solid #ebebeb' }}>
-            🕐 {room.time_start}:00 ~ {room.time_end}:00
+            <Clock3 className="w-3 h-3" /> {room.time_start}:00 ~ {room.time_end}:00
           </span>
-          <span className="text-xs font-bold px-2.5 py-1"
+          <span className="text-xs font-bold px-2.5 py-1 flex items-center gap-1"
             style={{ borderRadius:'999px', background:'#f5f5f5', color:'#888', border:'1.5px solid #ebebeb' }}>
-            👥 {availabilities.length}명 응답
+            <Users className="w-3 h-3" /> {availabilities.length}명 응답
           </span>
         </div>
       </div>
@@ -138,8 +138,8 @@ export default function RoomPage() {
       {/* ── 탭 ── */}
       <div className="flex gap-2">
         {[
-          { id: 'input',   label: '⏰ 내 시간 입력' },
-          { id: 'results', label: '📊 결과 보기', badge: availabilities.length > 0 ? availabilities.length : null },
+          { id: 'input',   label: '내 시간 입력', icon: Timer },
+          { id: 'results', label: '결과 보기', icon: BarChart2, badge: availabilities.length > 0 ? availabilities.length : null },
         ].map(t => (
           <button key={t.id}
             onClick={() => { setTab(t.id); if (t.id === 'results') loadAvailabilities() }}
@@ -151,6 +151,7 @@ export default function RoomPage() {
               borderRadius: '999px', background: '#f5f5f5', color: '#aaa', border: '1.5px solid #ebebeb',
             }}
           >
+            {t.icon && <t.icon className="w-3.5 h-3.5" />}
             {t.label}
             {t.badge && (
               <span className="text-xs px-1.5 py-0.5 font-extrabold"
@@ -191,7 +192,7 @@ export default function RoomPage() {
       {tab === 'input' && (
         <div className="space-y-4">
           <div className="card p-5">
-            <label className="label">👤 내 이름</label>
+            <label className="label">내 이름</label>
             <div className="flex gap-2">
               <input type="text" className="input flex-1" placeholder="홍길동"
                 value={name} onChange={e => setName(e.target.value)} maxLength={20}
@@ -210,8 +211,8 @@ export default function RoomPage() {
               </p>
             )}
             {selected.size > 0 && (
-              <p className="mt-2 text-xs font-bold" style={{ color:'#aaa' }}>
-                ✅ {selected.size}개 슬롯 ({Math.floor(selected.size/2)}시간 {selected.size%2*30>0?'30분':''}) 선택됨
+              <p className="mt-2 text-xs font-bold flex items-center gap-1" style={{ color:'#0ecfb0' }}>
+                <Check className="w-3 h-3" /> {selected.size}개 슬롯 ({Math.floor(selected.size/2)}시간 {selected.size%2*30>0?'30분':''}) 선택됨
               </p>
             )}
           </div>
