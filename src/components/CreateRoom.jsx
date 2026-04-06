@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Calendar, Clock, Users, ArrowRight, AlertCircle, MessageSquarePlus } from 'lucide-react'
+import FeedbackModal from './FeedbackModal'
 import DatePicker from './DatePicker'
 import { createRoom } from '../lib/supabase'
 import { isSupabaseConfigured } from '../lib/supabase'
@@ -25,6 +26,7 @@ export default function CreateRoom() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showFeedback, setShowFeedback] = useState(false)
 
   function todayStr() {
     const d = new Date()
@@ -222,12 +224,11 @@ export default function CreateRoom() {
 
       {/* 개선사항 문의 */}
       <div className="mt-6">
-        <a
-          href="https://github.com/WhiteJbb/When2Work/issues/new"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="card p-4 flex items-center gap-3 hover:border-brand-400 dark:hover:border-brand-500
-                     transition-colors group"
+        <button
+          type="button"
+          onClick={() => setShowFeedback(true)}
+          className="card p-4 w-full flex items-center gap-3 hover:border-brand-400 dark:hover:border-brand-500
+                     transition-colors group text-left"
         >
           <div className="w-9 h-9 rounded-xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center flex-shrink-0
                            group-hover:bg-brand-200 dark:group-hover:bg-brand-800/40 transition-colors">
@@ -235,10 +236,12 @@ export default function CreateRoom() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">개선사항이나 버그를 발견하셨나요?</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">GitHub Issues에서 문의해주세요 →</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">의견을 남겨주시면 검토 후 반영할게요 →</p>
           </div>
-        </a>
+        </button>
       </div>
+
+      {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
 
     </div>
   )
