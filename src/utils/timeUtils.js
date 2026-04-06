@@ -80,6 +80,7 @@ export function buildHeatmap(availabilities) {
 
 /**
  * 가장 많은 사람이 가능한 연속 슬롯 블록을 찾아 상위 N개 반환
+ * 모든 가능한 연속 구간을 탐색하여 각 구간에서 가능한 사람 수 계산
  * minSlots: 최소 연속 슬롯 수 (기본 2 = 1시간)
  */
 export function findBestSlots(heatmap, availabilities, topN = 3, minSlots = 2) {
@@ -99,50 +100,66 @@ export function findBestSlots(heatmap, availabilities, topN = 3, minSlots = 2) {
     // 시간순 정렬
     slots.sort((a, b) => a.time.localeCompare(b.time))
 
-    // 연속 슬롯 묶기
-    let i = 0
-    while (i < slots.length) {
+    // 모든 가능한 연속 구간 탐색
+    for (let i = 0; i < slots.length; i++) {
+      // i부터 시작하는 연속 구간들을 찾음
       let j = i
-      const startNames = new Set(slots[i].names)
+      let commonNames = new Set(slots[i].names)
 
-      // 다음 슬롯과 30분 차이인지 확인하며 연속 블록 탐색
-      while (j + 1 < slots.length) {
-        const curr = slots[j].time
-        const next = slots[j + 1].time
-        if (!isConsecutive(curr, next)) break
-        // 교집합
-        const intersection = slots[j + 1].names.filter(n => startNames.has(n))
-        if (intersection.length === 0) break
-        // 교집합으로 업데이트
-        for (const n of [...startNames]) {
-          if (!intersection.includes(n)) startNames.delete(n)
+      while (j < slots.length) {
+        // j번째 슬롯까지의 교집합 계산
+        if (j > i) {
+          const curr = slots[j - 1].time
+          const next = slots[j].time
+          
+          // 연속되지 않으면 중단
+          if (!isConsecutive(curr, next)) break
+          
+          // 교집합 업데이트
+          const nextNames = new Set(slots[j].names)
+          const intersection = [...commonNames].filter(n => nextNames.has(n))
+          commonNames = new Set(intersection)
         }
+
+        const slotCount = j - i + 1
+        
+        // 최소 슬롯 수 이상이고 가능한 사람이 있으면 추가
+        if (slotCount >= minSlots && commonNames.size > 0) {
+          blocks.push({
+            date,
+            startTime: slots[i].time,
+            endTime: addMinutes(slots[j].time, 30),
+            participants: [...commonNames],
+            count: commonNames.size,
+            durationMins: slotCount * 30,
+          })
+        }
+        
         j++
       }
+    }
+  }
 
-      const slotCount = j - i + 1
-      if (slotCount >= minSlots && startNames.size > 0) {
-        blocks.push({
-          date,
-          startTime: slots[i].time,
-          endTime: addMinutes(slots[j].time, 30),
-          participants: [...startNames],
-          count: startNames.size,
-          durationMins: slotCount * 30,
-        })
-      }
-      i = j + 1
+  // 중복 제거 (같은 시간대, 같은 참여자)
+  const uniqueBlocks = []
+  const seen = new Set()
+  
+  for (const block of blocks) {
+    const key = `${block.date}|${block.startTime}|${block.endTime}|${block.participants.sort().join(',')}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      uniqueBlocks.push(block)
     }
   }
 
   // 참여 인원 수 → 길이 → 날짜순 정렬
-  blocks.sort((a, b) => {
+  uniqueBlocks.sort((a, b) => {
     if (b.count !== a.count) return b.count - a.count
     if (b.durationMins !== a.durationMins) return b.durationMins - a.durationMins
     return a.date.localeCompare(b.date)
   })
 
-  return blocks.slice(0, topN)
+  return uniqueBlocks.slice(0, topN)
 }
 
 function isConsecutive(time1, time2) {
