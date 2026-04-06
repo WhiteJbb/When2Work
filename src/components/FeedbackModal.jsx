@@ -34,10 +34,10 @@ export default function FeedbackModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0" style={{ background:'rgba(0,0,0,0.4)', backdropFilter:'blur(4px)' }} onClick={onClose}/>
 
-      <div className="relative w-full sm:max-w-md bg-white dark:bg-[#232329] p-6 pb-24 sm:pb-6 modal-sheet"
+      <div className="relative w-full sm:max-w-md bg-white dark:bg-[#232329] p-6 pb-10 sm:pb-6 modal-sheet mb-16 sm:mb-0"
         style={{ boxShadow:'0 -4px 32px rgba(0,0,0,0.2)', maxHeight:'90vh', overflowY:'auto' }}
       >
         {/* 핸들 */}
