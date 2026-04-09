@@ -205,7 +205,7 @@ export default function CreateRoom() {
           </div>
         </>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="label"><Calendar className="w-3 h-3 inline mr-1" />시작 날짜</label>
             <DatePicker value={form.startDate} minDate={todayStr()} onChange={val => setForm(f => ({...f, startDate: val}))} />
