@@ -72,17 +72,34 @@ export default function CreateRoom() {
     previewDates = generateDateRange(form.startDate, form.numDays)
   }
 
-  // 주별로 날짜 그룹화
+  // 주별로 날짜 그룹화 (7일 이상일 때만)
   const groupedByWeek = []
-  let currentWeek = []
-  previewDates.forEach((d, i) => {
-    currentWeek.push(d)
-    const date = new Date(d + 'T00:00:00')
-    if (date.getDay() === 6 || i === previewDates.length - 1) {
-      groupedByWeek.push([...currentWeek])
-      currentWeek = []
+  if (previewDates.length >= 7) {
+    let currentWeek = []
+    previewDates.forEach((d, i) => {
+      const date = new Date(d + 'T00:00:00')
+      
+      // 첫 날짜이거나 일요일이면 새 주 시작
+      if (i === 0 || date.getDay() === 0) {
+        if (currentWeek.length > 0) {
+          groupedByWeek.push([...currentWeek])
+        }
+        currentWeek = [d]
+      } else {
+        currentWeek.push(d)
+      }
+      
+      // 마지막 날짜면 현재 주 추가
+      if (i === previewDates.length - 1) {
+        groupedByWeek.push([...currentWeek])
+      }
+    })
+  } else {
+    // 7일 미만이면 한 줄로
+    if (previewDates.length > 0) {
+      groupedByWeek.push(previewDates)
     }
-  })
+  }
 
   const FormContent = (
     <div className="space-y-4">
@@ -188,16 +205,22 @@ export default function CreateRoom() {
                 {week.map(d => {
                   const date = new Date(d + 'T00:00:00')
                   const days = ['일','월','화','수','목','금','토']
-                  const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                  const dayOfWeek = date.getDay()
+                  const isSunday = dayOfWeek === 0
+                  const isSaturday = dayOfWeek === 6
+                  
                   return (
                     <span key={d}
-                      className={`text-xs font-bold px-2.5 py-1 ${isWeekend
-                        ? 'bg-[#fff1f2] dark:bg-[#2d1a1d] text-[#e11d48] border border-[#fecdd3] dark:border-[#4a2028]'
-                        : 'bg-[#edfdf8] dark:bg-[#0f2e2a] text-[#0ecfb0] dark:text-[#0ab8a0] border border-[#a8f2e4] dark:border-[#1a4a44]'
+                      className={`text-xs font-bold px-2.5 py-1 ${
+                        isSunday
+                          ? 'bg-[#fff1f2] dark:bg-[#2d1a1d] text-[#e11d48] border border-[#fecdd3] dark:border-[#4a2028]'
+                          : isSaturday
+                          ? 'bg-[#eff6ff] dark:bg-[#1e293b] text-[#3b82f6] border border-[#bfdbfe] dark:border-[#334155]'
+                          : 'bg-[#edfdf8] dark:bg-[#0f2e2a] text-[#0ecfb0] dark:text-[#0ab8a0] border border-[#a8f2e4] dark:border-[#1a4a44]'
                       }`}
                       style={{ borderRadius: '999px' }}
                     >
-                      {date.getMonth()+1}/{date.getDate()}({days[date.getDay()]})
+                      {date.getMonth()+1}/{date.getDate()}({days[dayOfWeek]})
                     </span>
                   )
                 })}

@@ -244,6 +244,10 @@ export default function RoomPage() {
                     타임 그리드에서 마우스를 드래그하거나 터치하여 가능한 시간대를 선택하세요. 
                     30분 단위로 선택할 수 있어요.
                   </p>
+                  <p className="text-xs font-bold mt-1.5 px-2 py-1 rounded-lg inline-block"
+                    style={{ background: 'rgba(14,207,176,0.1)', color: '#0ecfb0' }}>
+                    💡 Shift 키를 누른 채 드래그하면 사각형 영역을 한번에 선택할 수 있어요!
+                  </p>
                 </div>
               </div>
 
@@ -341,7 +345,13 @@ export default function RoomPage() {
           </div>
 
           <div className="flex items-center justify-between px-1">
-            <p className="text-xs font-semibold" style={{ color:'#bbb' }}>드래그하여 가능한 시간을 선택하세요</p>
+            <p className="text-xs font-semibold" style={{ color:'#bbb' }}>
+              드래그하여 가능한 시간을 선택하세요 
+              <span className="ml-2 px-2 py-0.5 rounded-md text-[10px]" 
+                style={{ background: 'rgba(14,207,176,0.1)', color: '#0ecfb0' }}>
+                💡 Shift 누르고 드래그하면 사각형 영역 선택
+              </span>
+            </p>
             {selected.size > 0 && (
               <button onClick={() => setSelected(new Set())} className="btn-secondary text-xs py-1.5 px-3">
                 <RefreshCw className="w-3 h-3"/> 초기화

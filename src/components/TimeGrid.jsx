@@ -15,7 +15,10 @@ export default function TimeGrid({
   const isDragging = useRef(false)
   const dragMode = useRef('add')
   const gridRef = useRef(null)
+  const containerRef = useRef(null)
   const lastPosRef = useRef(null)
+  const autoScrollInterval = useRef(null)
+  const startPosRef = useRef(null) // 드래그 시작 위치
 
   function getPosFromPoint(clientX, clientY) {
     if (!gridRef.current) return null
@@ -41,13 +44,36 @@ export default function TimeGrid({
     const pos = getPosFromPoint(clientX, clientY)
     if (!pos) return
     const prev = lastPosRef.current
+    const start = startPosRef.current
     const ids = []
-    if (prev?.dateStr === pos.dateStr) {
+    
+    // Shift 키를 누르고 있으면 범위 선택 모드
+    if (start && (window.event?.shiftKey || isDragging.current)) {
+      // 시작점과 현재점 사이의 모든 셀 선택
+      const dateStartIdx = dates.indexOf(start.dateStr)
+      const dateEndIdx = dates.indexOf(pos.dateStr)
+      const rowStart = start.rowIdx
+      const rowEnd = pos.rowIdx
+      
+      const minDateIdx = Math.min(dateStartIdx, dateEndIdx)
+      const maxDateIdx = Math.max(dateStartIdx, dateEndIdx)
+      const minRow = Math.min(rowStart, rowEnd)
+      const maxRow = Math.max(rowStart, rowEnd)
+      
+      // 사각형 영역의 모든 셀 추가
+      for (let d = minDateIdx; d <= maxDateIdx; d++) {
+        for (let r = minRow; r <= maxRow; r++) {
+          ids.push(slotId(dates[d], timeSlots[r]))
+        }
+      }
+    } else if (prev?.dateStr === pos.dateStr) {
+      // 같은 날짜 내에서 세로 드래그
       for (let r = Math.min(prev.rowIdx, pos.rowIdx); r <= Math.max(prev.rowIdx, pos.rowIdx); r++)
         ids.push(slotId(pos.dateStr, timeSlots[r]))
     } else {
       ids.push(slotId(pos.dateStr, timeSlots[pos.rowIdx]))
     }
+    
     onSelectionChange(prev => {
       const next = new Set(prev)
       for (const id of ids) dragMode.current === 'add' ? next.add(id) : next.delete(id)
@@ -62,7 +88,9 @@ export default function TimeGrid({
     isDragging.current = true
     dragMode.current = selected.has(id) ? 'remove' : 'add'
     const [dateStr, time] = id.split('|')
-    lastPosRef.current = { dateStr, rowIdx: timeSlots.indexOf(time) }
+    const pos = { dateStr, rowIdx: timeSlots.indexOf(time) }
+    startPosRef.current = pos
+    lastPosRef.current = pos
     onSelectionChange(prev => {
       const next = new Set(prev)
       dragMode.current === 'add' ? next.add(id) : next.delete(id)
@@ -73,6 +101,28 @@ export default function TimeGrid({
   const handleMouseMove = useCallback((e) => {
     if (mode !== 'select' || !isDragging.current) return
     applyTo(e.clientX, e.clientY)
+    
+    // 자동 스크롤
+    if (containerRef.current) {
+      const container = containerRef.current
+      const rect = container.getBoundingClientRect()
+      const scrollSpeed = 10
+      const edgeSize = 50
+      
+      // 가로 스크롤
+      if (e.clientX < rect.left + edgeSize) {
+        container.scrollLeft -= scrollSpeed
+      } else if (e.clientX > rect.right - edgeSize) {
+        container.scrollLeft += scrollSpeed
+      }
+      
+      // 세로 스크롤
+      if (e.clientY < rect.top + edgeSize) {
+        container.scrollTop -= scrollSpeed
+      } else if (e.clientY > rect.bottom - edgeSize) {
+        container.scrollTop += scrollSpeed
+      }
+    }
   }, [mode])
 
   const handleTouchStart = useCallback((id) => (e) => {
@@ -81,7 +131,9 @@ export default function TimeGrid({
     isDragging.current = true
     dragMode.current = selected.has(id) ? 'remove' : 'add'
     const [dateStr, time] = id.split('|')
-    lastPosRef.current = { dateStr, rowIdx: timeSlots.indexOf(time) }
+    const pos = { dateStr, rowIdx: timeSlots.indexOf(time) }
+    startPosRef.current = pos
+    lastPosRef.current = pos
     onSelectionChange(prev => {
       const next = new Set(prev)
       dragMode.current === 'add' ? next.add(id) : next.delete(id)
@@ -94,10 +146,33 @@ export default function TimeGrid({
     e.preventDefault()
     const touch = e.touches[0]
     applyTo(touch.clientX, touch.clientY)
+    
+    // 터치 자동 스크롤
+    if (containerRef.current) {
+      const container = containerRef.current
+      const rect = container.getBoundingClientRect()
+      const scrollSpeed = 10
+      const edgeSize = 50
+      
+      if (touch.clientX < rect.left + edgeSize) {
+        container.scrollLeft -= scrollSpeed
+      } else if (touch.clientX > rect.right - edgeSize) {
+        container.scrollLeft += scrollSpeed
+      }
+      
+      if (touch.clientY < rect.top + edgeSize) {
+        container.scrollTop -= scrollSpeed
+      } else if (touch.clientY > rect.bottom - edgeSize) {
+        container.scrollTop += scrollSpeed
+      }
+    }
   }, [mode])
 
   useEffect(() => {
-    const onUp = () => { isDragging.current = false }
+    const onUp = () => { 
+      isDragging.current = false
+      startPosRef.current = null
+    }
     window.addEventListener('mouseup', onUp)
     window.addEventListener('touchend', onUp)
     return () => { window.removeEventListener('mouseup', onUp); window.removeEventListener('touchend', onUp) }
@@ -130,7 +205,7 @@ export default function TimeGrid({
   }
 
   return (
-    <div className="overflow-auto"
+    <div ref={containerRef} className="overflow-auto time-grid-scroll"
       style={{ borderRadius: '24px', border: `1.5px solid ${c.border}`, boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
     >
       <div ref={gridRef} className="relative" onMouseMove={handleMouseMove} onTouchMove={handleTouchMove}
