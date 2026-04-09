@@ -15,7 +15,7 @@ function fromDateStr(str) {
   return new Date(str + 'T00:00:00')
 }
 
-export default function DatePicker({ value, onChange, minDate }) {
+export default function DatePicker({ value, onChange, minDate, fullWidth = false }) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const min = minDate ? fromDateStr(minDate) : today
@@ -28,17 +28,6 @@ export default function DatePicker({ value, onChange, minDate }) {
 
   const containerRef = useRef(null)
   const [position, setPosition] = useState('left')
-  const [isMobile, setIsMobile] = useState(false)
-
-  // 모바일 감지
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640) // sm breakpoint
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   // 바깥 클릭 시 닫기
   useEffect(() => {
@@ -51,24 +40,22 @@ export default function DatePicker({ value, onChange, minDate }) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [open])
 
-  // 캘린더 위치 조정 (데스크탑만)
+  // 캘린더 위치 조정 (고정 너비일 때만)
   useEffect(() => {
-    if (open && containerRef.current && !isMobile) {
+    if (open && containerRef.current && !fullWidth) {
       const rect = containerRef.current.getBoundingClientRect()
       const calendarWidth = 320 // w-80 = 20rem = 320px
       const spaceRight = window.innerWidth - rect.right
+      const spaceLeft = rect.left
       
-      // 오른쪽 공간이 부족하면 right 정렬
-      if (spaceRight < calendarWidth && rect.left > calendarWidth) {
+      // 오른쪽 공간이 부족하고 왼쪽에 공간이 있으면 right 정렬
+      if (spaceRight < calendarWidth && spaceLeft >= calendarWidth) {
         setPosition('right')
       } else {
         setPosition('left')
       }
-    } else if (isMobile) {
-      // 모바일에서는 항상 left
-      setPosition('left')
     }
-  }, [open, isMobile])
+  }, [open, fullWidth])
 
   function prevMonth() {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
@@ -146,8 +133,8 @@ export default function DatePicker({ value, onChange, minDate }) {
       {/* 달력 팝업 */}
       {open && (
         <div className={`absolute top-full mt-2 z-50 card shadow-xl p-4 animate-in ${
-          isMobile 
-            ? 'left-0 w-[min(calc(100vw-2.5rem),20rem)]' 
+          fullWidth 
+            ? 'left-0 right-0' 
             : `w-80 ${position === 'right' ? 'right-0' : 'left-0'}`
         }`}>
           {/* 월 네비게이션 */}
