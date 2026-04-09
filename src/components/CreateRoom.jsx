@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   AlertCircle, Calendar, CalendarDays, Clock, Link2,
@@ -26,6 +26,13 @@ export default function CreateRoom() {
   const [dateMode, setDateMode] = useState('numDays') // 'numDays' or 'range'
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [recentRooms, setRecentRooms] = useState([])
+
+  useEffect(() => {
+    // 최근 방문한 방 불러오기
+    const recent = JSON.parse(localStorage.getItem('w2w-recent-rooms') || '[]')
+    setRecentRooms(recent)
+  }, [])
 
   function todayStr() {
     const d = new Date()
@@ -52,6 +59,10 @@ export default function CreateRoom() {
     try {
       const dates = generateDateRange(form.startDate, numDays)
       const room = await createRoom({ title: form.title.trim(), dates, time_start: form.startHour, time_end: form.endHour })
+      
+      // 방 생성자 토큰 저장
+      localStorage.setItem(`w2w-owner-${room.id}`, 'true')
+      
       navigate(`/room/${room.id}`)
     } catch (err) {
       setError('방 생성에 실패했습니다.')
@@ -330,6 +341,32 @@ export default function CreateRoom() {
                 </div>
               ))}
             </div>
+
+            {/* 최근 일정 */}
+            {recentRooms.length > 0 && (
+              <div className="mt-6">
+                <p className="text-xs font-semibold mb-2 text-[#aaa]">최근 일정</p>
+                <div className="space-y-2">
+                  {recentRooms.slice(0, 3).map(room => (
+                    <button
+                      key={room.id || room}
+                      onClick={() => navigate(`/room/${room.id || room}`)}
+                      className="w-full flex items-center justify-between p-3 rounded-xl bg-[#f9f9f9] dark:bg-[#232329] hover:bg-[#f0f0f0] dark:hover:bg-[#2a2a30] transition-colors"
+                    >
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#edfdf8] dark:bg-[#0f2e2a] flex-shrink-0">
+                          <CalendarDays className="w-3.5 h-3.5 text-[#0ecfb0] dark:text-[#0ab8a0]" />
+                        </div>
+                        <p className="text-xs font-bold text-[#111] dark:text-[#e4e4e7] truncate">
+                          {room.title || `방 ${(room.id || room).slice(0, 8)}...`}
+                        </p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-[#aaa] flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 오른쪽: 인라인 폼 */}
@@ -414,6 +451,36 @@ export default function CreateRoom() {
             </div>
           </div>
         </div>
+
+        {/* 최근 일정 */}
+        {recentRooms.length > 0 && (
+          <div className="mb-6">
+            <p className="section-sub mb-1">최근 일정</p>
+            <p className="section-title text-lg mb-3">다시 들어가기</p>
+            <div className="space-y-2">
+              {recentRooms.map(room => (
+                <button
+                  key={room.id || room}
+                  onClick={() => navigate(`/room/${room.id || room}`)}
+                  className="w-full card p-4 flex items-center justify-between hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a30] transition-colors active:scale-[0.98]"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#edfdf8] dark:bg-[#0f2e2a] border border-[#a8f2e4] dark:border-[#1a4a44] flex-shrink-0">
+                      <CalendarDays className="w-5 h-5 text-[#0ecfb0] dark:text-[#0ab8a0]" />
+                    </div>
+                    <div className="text-left flex-1 min-w-0">
+                      <p className="font-extrabold text-sm text-[#111] dark:text-[#e4e4e7] truncate">
+                        {room.title || `방 ${(room.id || room).slice(0, 8)}...`}
+                      </p>
+                      <p className="text-xs font-medium text-[#aaa]">클릭하여 다시 입장</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-[#aaa] flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 이용 방법 */}
         <div className="mb-6">

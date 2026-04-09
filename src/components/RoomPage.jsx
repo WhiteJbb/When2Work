@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { createPortal } from 'react-dom'
 import { Copy, Check, RefreshCw, Save, CalendarDays, Clock3, Users, AlertCircle, Loader2, Trash2, Frown, Timer, BarChart2 } from 'lucide-react'
 import { getRoom, getAvailabilities, upsertAvailability, deleteRoom } from '../lib/supabase'
 import TimeGrid from './TimeGrid'
@@ -28,6 +29,9 @@ export default function RoomPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
+  
+  // 방 생성자 확인
+  const isOwner = localStorage.getItem(`w2w-owner-${id}`) === 'true'
 
   useEffect(() => {
     async function load() {
@@ -36,6 +40,18 @@ export default function RoomPage() {
       finally { setLoading(false) }
     }
     load()
+    
+    // 최근 방문한 방 저장 (방 정보 포함)
+    if (id) {
+      getRoom(id).then(roomData => {
+        if (roomData) {
+          const recentRooms = JSON.parse(localStorage.getItem('w2w-recent-rooms') || '[]')
+          const roomInfo = { id, title: roomData.title, visitedAt: Date.now() }
+          const newRecent = [roomInfo, ...recentRooms.filter(r => r.id !== id)].slice(0, 5)
+          localStorage.setItem('w2w-recent-rooms', JSON.stringify(newRecent))
+        }
+      }).catch(() => {})
+    }
   }, [id])
 
   // 튜토리얼 표시 여부 체크
@@ -137,12 +153,14 @@ export default function RoomPage() {
             >
               {copied ? <><Check className="w-3.5 h-3.5"/>복사됨</> : <><Copy className="w-3.5 h-3.5"/>링크 복사</>}
             </button>
-            <button onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold active:scale-95 transition-all bg-[#fff1f2] dark:bg-[#2d1a1d] text-[#e11d48] border border-[#fecdd3] dark:border-[#4a2028]"
-              style={{ borderRadius: '999px' }}
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            {isOwner && (
+              <button onClick={() => setShowDeleteConfirm(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold active:scale-95 transition-all bg-[#fff1f2] dark:bg-[#2d1a1d] text-[#e11d48] border border-[#fecdd3] dark:border-[#4a2028]"
+                style={{ borderRadius: '999px' }}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -197,9 +215,13 @@ export default function RoomPage() {
       </div>
 
       {/* ── 삭제 확인 ── */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
-          style={{ background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(6px)' }}
+      {showDeleteConfirm && createPortal(
+        <div className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ 
+            background: 'rgba(0,0,0,0.35)', 
+            backdropFilter: 'blur(6px)',
+            zIndex: 9999
+          }}
         >
           <div className="card p-6 max-w-sm w-full">
             <p className="text-4xl mb-3">🗑️</p>
@@ -215,7 +237,8 @@ export default function RoomPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── 사용법 튜토리얼 ── */}
@@ -254,6 +277,9 @@ export default function RoomPage() {
                   <p className="text-xs font-medium text-[#888]">
                     타임 그리드에서 시작점을 클릭하고 끝점까지 드래그하세요. 
                     사각형 영역의 모든 시간이 선택됩니다. (30분 단위)
+                  </p>
+                  <p className="text-xs font-medium mt-1.5 text-[#666]">
+                    💡 캘린더 이동은 날짜/시간 표시 부분이나 여백을 드래그하세요
                   </p>
                 </div>
               </div>
@@ -354,6 +380,9 @@ export default function RoomPage() {
           <div className="flex items-center justify-between px-1">
             <p className="text-xs font-semibold" style={{ color:'#bbb' }}>
               드래그하여 가능한 시간을 선택하세요
+              <span className="ml-2 text-[10px]" style={{ color:'#888' }}>
+                (캘린더 이동: 날짜/시간 표시 부분이나 여백 드래그)
+              </span>
             </p>
             {selected.size > 0 && (
               <button onClick={() => {

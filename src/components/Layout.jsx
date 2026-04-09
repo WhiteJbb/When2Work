@@ -42,7 +42,13 @@ export default function Layout({ children }) {
       <header className="md:hidden sticky top-0 z-40 bg-white dark:bg-[#18181b] border-b border-[#f0f0f0] dark:border-[#2e2e36]">
         <div className="max-w-lg mx-auto px-5 h-12 flex items-center justify-between">
           {!isHome ? (
-            <button onClick={() => navigate(-1)}
+            <button onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1)
+              } else {
+                navigate('/')
+              }
+            }}
               className="text-sm font-bold transition-opacity hover:opacity-60 text-[#111] dark:text-[#e4e4e7]"
             >← 뒤로</button>
           ) : (
