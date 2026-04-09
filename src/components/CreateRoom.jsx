@@ -22,7 +22,8 @@ const STEPS = [
 export default function CreateRoom() {
   const navigate = useNavigate()
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ title: '', startDate: todayStr(), numDays: 5, startHour: 9, endHour: 24 })
+  const [form, setForm] = useState({ title: '', startDate: todayStr(), endDate: '', numDays: 7, startHour: 9, endHour: 24 })
+  const [dateMode, setDateMode] = useState('numDays') // 'numDays' or 'range'
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -36,9 +37,20 @@ export default function CreateRoom() {
     setError('')
     if (!form.title.trim()) { setError('방 제목을 입력해주세요.'); return }
     if (form.startHour >= form.endHour) { setError('종료 시간은 시작 시간보다 늦어야 합니다.'); return }
+    
+    // 날짜 범위 계산
+    let numDays = form.numDays
+    if (dateMode === 'range' && form.endDate) {
+      const start = new Date(form.startDate + 'T00:00:00')
+      const end = new Date(form.endDate + 'T00:00:00')
+      numDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
+      if (numDays < 1) { setError('종료일은 시작일보다 늦어야 합니다.'); return }
+      if (numDays > 30) { setError('최대 30일까지 선택 가능합니다.'); return }
+    }
+    
     setLoading(true)
     try {
-      const dates = generateDateRange(form.startDate, form.numDays)
+      const dates = generateDateRange(form.startDate, numDays)
       const room = await createRoom({ title: form.title.trim(), dates, time_start: form.startHour, time_end: form.endHour })
       navigate(`/room/${room.id}`)
     } catch (err) {
@@ -49,7 +61,28 @@ export default function CreateRoom() {
     }
   }
 
-  const previewDates = generateDateRange(form.startDate, form.numDays)
+  // 날짜 범위 계산
+  let previewDates = []
+  if (dateMode === 'range' && form.endDate) {
+    const start = new Date(form.startDate + 'T00:00:00')
+    const end = new Date(form.endDate + 'T00:00:00')
+    const numDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
+    previewDates = numDays > 0 && numDays <= 30 ? generateDateRange(form.startDate, numDays) : []
+  } else {
+    previewDates = generateDateRange(form.startDate, form.numDays)
+  }
+
+  // 주별로 날짜 그룹화
+  const groupedByWeek = []
+  let currentWeek = []
+  previewDates.forEach((d, i) => {
+    currentWeek.push(d)
+    const date = new Date(d + 'T00:00:00')
+    if (date.getDay() === 6 || i === previewDates.length - 1) {
+      groupedByWeek.push([...currentWeek])
+      currentWeek = []
+    }
+  })
 
   const FormContent = (
     <div className="space-y-4">
@@ -60,37 +93,119 @@ export default function CreateRoom() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="label"><Calendar className="w-3 h-3 inline mr-1" />시작 날짜</label>
-          <DatePicker value={form.startDate} minDate={todayStr()} onChange={val => setForm(f => ({...f, startDate: val}))} />
-        </div>
-        <div>
-          <label className="label"><Hash className="w-3 h-3 inline mr-1" />날짜 수</label>
-          <select className="input" value={form.numDays} onChange={e => setForm(f => ({...f, numDays: Number(e.target.value)}))}>
-            {[1,2,3,4,5,6,7].map(n => <option key={n} value={n}>{n}일</option>)}
-          </select>
+      {/* 날짜 선택 모드 토글 */}
+      <div>
+        <label className="label"><Calendar className="w-3 h-3 inline mr-1" />날짜 선택 방식</label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setDateMode('numDays')}
+            className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold transition-all ${
+              dateMode === 'numDays'
+                ? 'bg-[#0ecfb0] text-white'
+                : 'bg-[#f5f5f5] dark:bg-[#2a2a30] text-[#888] hover:bg-[#e8e8e8] dark:hover:bg-[#323238]'
+            }`}
+          >
+            일수 선택
+          </button>
+          <button
+            type="button"
+            onClick={() => setDateMode('range')}
+            className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold transition-all ${
+              dateMode === 'range'
+                ? 'bg-[#0ecfb0] text-white'
+                : 'bg-[#f5f5f5] dark:bg-[#2a2a30] text-[#888] hover:bg-[#e8e8e8] dark:hover:bg-[#323238]'
+            }`}
+          >
+            기간 선택
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
-        {previewDates.map(d => {
-          const date = new Date(d + 'T00:00:00')
-          const days = ['일','월','화','수','목','금','토']
-          const isWeekend = date.getDay() === 0 || date.getDay() === 6
-          return (
-            <span key={d}
-              className={`text-xs font-bold px-2.5 py-1 ${isWeekend
-                ? 'bg-[#fff1f2] dark:bg-[#2d1a1d] text-[#e11d48] border border-[#fecdd3] dark:border-[#4a2028]'
-                : 'bg-[#edfdf8] dark:bg-[#0f2e2a] text-[#0ecfb0] dark:text-[#0ab8a0] border border-[#a8f2e4] dark:border-[#1a4a44]'
-              }`}
-              style={{ borderRadius: '999px' }}
-            >
-              {date.getMonth()+1}/{date.getDate()}({days[date.getDay()]})
-            </span>
-          )
-        })}
-      </div>
+      {dateMode === 'numDays' ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label"><Calendar className="w-3 h-3 inline mr-1" />시작 날짜</label>
+              <DatePicker value={form.startDate} minDate={todayStr()} onChange={val => setForm(f => ({...f, startDate: val}))} />
+            </div>
+            <div>
+              <label className="label"><Hash className="w-3 h-3 inline mr-1" />날짜 수</label>
+              <select className="input" value={form.numDays} onChange={e => setForm(f => ({...f, numDays: Number(e.target.value)}))}>
+                {Array.from({length: 30}, (_, i) => i + 1).map(n => (
+                  <option key={n} value={n}>{n}일</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* 빠른 선택 버튼 */}
+          <div>
+            <label className="label text-xs">빠른 선택</label>
+            <div className="flex gap-2">
+              {[
+                { label: '1주', days: 7 },
+                { label: '2주', days: 14 },
+                { label: '3주', days: 21 },
+                { label: '4주', days: 28 }
+              ].map(({ label, days }) => (
+                <button
+                  key={days}
+                  type="button"
+                  onClick={() => setForm(f => ({...f, numDays: days}))}
+                  className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all ${
+                    form.numDays === days
+                      ? 'bg-[#edfdf8] dark:bg-[#0f2e2a] text-[#0ecfb0] border border-[#a8f2e4] dark:border-[#1a4a44]'
+                      : 'bg-[#f5f5f5] dark:bg-[#2a2a30] text-[#888] hover:bg-[#e8e8e8] dark:hover:bg-[#323238]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label"><Calendar className="w-3 h-3 inline mr-1" />시작 날짜</label>
+            <DatePicker value={form.startDate} minDate={todayStr()} onChange={val => setForm(f => ({...f, startDate: val}))} />
+          </div>
+          <div>
+            <label className="label"><Calendar className="w-3 h-3 inline mr-1" />종료 날짜</label>
+            <DatePicker value={form.endDate} minDate={form.startDate} onChange={val => setForm(f => ({...f, endDate: val}))} />
+          </div>
+        </div>
+      )}
+
+      {/* 날짜 미리보기 - 주별 그룹화 */}
+      {previewDates.length > 0 && (
+        <div>
+          <label className="label text-xs">선택된 날짜 ({previewDates.length}일)</label>
+          <div className="space-y-2 max-h-32 overflow-y-auto p-2 rounded-xl bg-[#f9f9f9] dark:bg-[#1a1a1f]">
+            {groupedByWeek.map((week, weekIdx) => (
+              <div key={weekIdx} className="flex flex-wrap gap-1.5">
+                {week.map(d => {
+                  const date = new Date(d + 'T00:00:00')
+                  const days = ['일','월','화','수','목','금','토']
+                  const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                  return (
+                    <span key={d}
+                      className={`text-xs font-bold px-2.5 py-1 ${isWeekend
+                        ? 'bg-[#fff1f2] dark:bg-[#2d1a1d] text-[#e11d48] border border-[#fecdd3] dark:border-[#4a2028]'
+                        : 'bg-[#edfdf8] dark:bg-[#0f2e2a] text-[#0ecfb0] dark:text-[#0ab8a0] border border-[#a8f2e4] dark:border-[#1a4a44]'
+                      }`}
+                      style={{ borderRadius: '999px' }}
+                    >
+                      {date.getMonth()+1}/{date.getDate()}({days[date.getDay()]})
+                    </span>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <div>

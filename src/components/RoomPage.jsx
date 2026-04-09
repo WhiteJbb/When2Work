@@ -23,6 +23,7 @@ export default function RoomPage() {
   const [copied, setCopied] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -32,6 +33,14 @@ export default function RoomPage() {
     }
     load()
   }, [id])
+
+  // 튜토리얼 표시 여부 체크
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('w2w-tutorial-seen')
+    if (!hasSeenTutorial && !loading && room) {
+      setShowTutorial(true)
+    }
+  }, [loading, room])
 
   const loadAvailabilities = useCallback(async () => {
     if (!id) return
@@ -74,6 +83,13 @@ export default function RoomPage() {
     try { await deleteRoom(id); navigate('/') }
     catch { alert('삭제에 실패했습니다.') }
     finally { setDeleting(false); setShowDeleteConfirm(false) }
+  }
+
+  function closeTutorial(dontShowAgain = false) {
+    if (dontShowAgain) {
+      localStorage.setItem('w2w-tutorial-seen', 'true')
+    }
+    setShowTutorial(false)
   }
 
   if (loading) return (
@@ -185,6 +201,110 @@ export default function RoomPage() {
                 style={{ background: '#e11d48', boxShadow: '0 4px 14px rgba(225,29,72,0.4)' }}
               >
                 {deleting ? <Loader2 className="w-4 h-4 animate-spin"/> : '삭제하기'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 사용법 튜토리얼 ── */}
+      {showTutorial && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}
+          onClick={() => closeTutorial(false)}
+        >
+          <div className="card p-6 max-w-lg w-full relative animate-in" 
+            style={{ animation: 'slideUp 0.3s ease-out' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* 헤더 */}
+            <div className="flex items-start gap-3 mb-5">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'linear-gradient(145deg, #a8f2e4 0%, #0ecfb0 100%)' }}
+              >
+                <Timer className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-extrabold mb-1 text-[#111] dark:text-[#e4e4e7]">시간 선택 방법</h3>
+                <p className="text-sm font-medium text-[#aaa]">가능한 시간을 쉽게 입력하세요</p>
+              </div>
+            </div>
+
+            {/* 스텝 */}
+            <div className="space-y-4 mb-6">
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-extrabold text-sm"
+                  style={{ background: '#edfdf8', color: '#0ecfb0', border: '2px solid #a8f2e4' }}
+                >
+                  1
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <p className="font-extrabold text-sm mb-1 text-[#111] dark:text-[#e4e4e7]">드래그로 시간 선택</p>
+                  <p className="text-xs font-medium text-[#888]">
+                    타임 그리드에서 마우스를 드래그하거나 터치하여 가능한 시간대를 선택하세요. 
+                    30분 단위로 선택할 수 있어요.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-extrabold text-sm"
+                  style={{ background: '#edfdf8', color: '#0ecfb0', border: '2px solid #a8f2e4' }}
+                >
+                  2
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <p className="font-extrabold text-sm mb-1 text-[#111] dark:text-[#e4e4e7]">여러 날짜 선택 가능</p>
+                  <p className="text-xs font-medium text-[#888]">
+                    각 날짜별로 다른 시간대를 선택할 수 있어요. 
+                    날짜를 넘나들며 자유롭게 드래그하세요.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-extrabold text-sm"
+                  style={{ background: '#edfdf8', color: '#0ecfb0', border: '2px solid #a8f2e4' }}
+                >
+                  3
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <p className="font-extrabold text-sm mb-1 text-[#111] dark:text-[#e4e4e7]">이름 입력 후 저장</p>
+                  <p className="text-xs font-medium text-[#888]">
+                    시간 선택이 끝나면 이름을 입력하고 저장 버튼을 눌러주세요. 
+                    같은 이름으로 다시 저장하면 업데이트돼요.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-extrabold text-sm"
+                  style={{ background: '#fff1f2', color: '#e11d48', border: '2px solid #fecdd3' }}
+                >
+                  💡
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <p className="font-extrabold text-sm mb-1 text-[#111] dark:text-[#e4e4e7]">결과 보기 탭</p>
+                  <p className="text-xs font-medium text-[#888]">
+                    모든 참여자의 응답을 확인하고 가장 많은 사람이 가능한 시간을 찾아보세요!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 버튼 */}
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={() => closeTutorial(true)}
+                className="btn-primary w-full py-3"
+              >
+                알겠어요, 시작할게요!
+              </button>
+              <button 
+                onClick={() => closeTutorial(false)}
+                className="btn-secondary w-full py-2 text-sm"
+              >
+                다음에 다시 보기
               </button>
             </div>
           </div>
