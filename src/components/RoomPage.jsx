@@ -377,21 +377,23 @@ export default function RoomPage() {
             )}
           </div>
 
-          <div className="flex items-center justify-between px-1">
-            <p className="text-xs font-semibold" style={{ color:'#bbb' }}>
-              드래그하여 가능한 시간을 선택하세요
-              <span className="ml-2 text-[10px]" style={{ color:'#888' }}>
-                (캘린더 이동: 날짜/시간 표시 부분이나 여백 드래그)
-              </span>
+          <div className="space-y-1.5 px-1">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold flex-1" style={{ color:'#bbb' }}>
+                드래그하여 가능한 시간을 선택하세요
+              </p>
+              {selected.size > 0 && (
+                <button onClick={() => {
+                  setSelected(new Set())
+                  localStorage.removeItem(`w2w-selected-${id}`)
+                }} className="btn-secondary text-xs py-1.5 px-3 flex-shrink-0">
+                  <RefreshCw className="w-3 h-3"/> 초기화
+                </button>
+              )}
+            </div>
+            <p className="text-[10px] font-medium" style={{ color:'#888' }}>
+              💡 캘린더 이동: 날짜/시간 표시 부분이나 여백 드래그
             </p>
-            {selected.size > 0 && (
-              <button onClick={() => {
-                setSelected(new Set())
-                localStorage.removeItem(`w2w-selected-${id}`)
-              }} className="btn-secondary text-xs py-1.5 px-3">
-                <RefreshCw className="w-3 h-3"/> 초기화
-              </button>
-            )}
           </div>
 
           <TimeGrid mode="select" dates={room.dates} startHour={room.time_start} endHour={room.time_end}
