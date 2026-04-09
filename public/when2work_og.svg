@@ -1,0 +1,100 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2DD4B0"/>
+      <stop offset="100%" stop-color="#0A9B78"/>
+    </linearGradient>
+    <radialGradient id="blob1" cx="15%" cy="20%" r="45%">
+      <stop offset="0%" stop-color="#5DDFC5" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#2DD4B0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="85%" cy="80%" r="50%">
+      <stop offset="0%" stop-color="#08856A" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0A9B78" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.22)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.08)"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#blob1)"/>
+  <rect width="1200" height="630" fill="url(#blob2)"/>
+  <circle cx="980" cy="100" r="180" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="980" cy="100" r="120" fill="rgba(255,255,255,0.07)"/>
+  <circle cx="200" cy="530" r="200" fill="rgba(0,0,0,0.05)"/>
+
+  <rect x="670" y="95" width="476" height="444" rx="28" fill="url(#cardBg)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+  <rect x="698" y="131" width="420" height="372" rx="16" fill="rgba(255,255,255,0.12)"/>
+
+  <rect x="698" y="131" width="420" height="50" rx="16" fill="rgba(255,255,255,0.15)"/>
+  <rect x="698" y="157" width="420" height="24" fill="rgba(255,255,255,0.15)"/>
+  <text x="728"  y="163" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" fill="rgba(255,255,255,0.6)">‹</text>
+  <text x="908"  y="163" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="rgba(255,255,255,0.9)">Team Scheduler</text>
+  <text x="1088" y="163" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" fill="rgba(255,255,255,0.6)">›</text>
+
+  <text x="728"  y="207" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="rgba(255,255,255,0.6)">월</text>
+  <text x="788"  y="207" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="rgba(255,255,255,0.6)">화</text>
+  <text x="848"  y="207" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="rgba(255,255,255,0.6)">수</text>
+  <text x="908"  y="207" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="rgba(255,255,255,0.6)">목</text>
+  <text x="968"  y="207" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="rgba(255,255,255,0.6)">금</text>
+  <text x="1028" y="207" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="rgba(255,255,255,0.4)">토</text>
+  <text x="1088" y="207" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="rgba(255,255,255,0.4)">일</text>
+
+  <text x="728"  y="248" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">1</text>
+  <text x="788"  y="248" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">2</text>
+  <text x="848"  y="248" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">3</text>
+  <text x="908"  y="248" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">4</text>
+  <text x="968"  y="248" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">5</text>
+  <text x="1028" y="248" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.4)">6</text>
+  <text x="1088" y="248" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.4)">7</text>
+
+  <rect x="710" y="277" width="396" height="36" rx="18" fill="rgba(255,255,255,0.18)"/>
+  <circle cx="728" cy="295" r="18" fill="white"/>
+  <text x="728"  y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#0A9B78">8</text>
+  <text x="788"  y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="white">9</text>
+  <text x="848"  y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="white">10</text>
+  <text x="908"  y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="white">11</text>
+  <text x="968"  y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="white">12</text>
+  <text x="1028" y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.5)">13</text>
+  <text x="1088" y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.5)">14</text>
+
+  <text x="728"  y="352" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">15</text>
+  <text x="788"  y="352" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">16</text>
+  <circle cx="848" cy="347" r="18" fill="rgba(255,255,255,0.2)"/>
+  <text x="848"  y="352" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="white">17</text>
+  <text x="908"  y="352" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">18</text>
+  <text x="968"  y="352" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">19</text>
+  <text x="1028" y="352" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.4)">20</text>
+  <text x="1088" y="352" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.4)">21</text>
+
+  <text x="728"  y="404" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">22</text>
+  <circle cx="788" cy="399" r="18" fill="rgba(255,255,255,0.2)"/>
+  <text x="788"  y="404" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="white">23</text>
+  <text x="848"  y="404" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">24</text>
+  <text x="908"  y="404" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">25</text>
+  <text x="968"  y="404" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">26</text>
+  <text x="1028" y="404" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.4)">27</text>
+  <text x="1088" y="404" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.4)">28</text>
+
+  <text x="728"  y="456" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">29</text>
+  <text x="788"  y="456" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="rgba(255,255,255,0.7)">30</text>
+
+  <rect x="80" y="160" width="64" height="64" rx="16" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="101" cy="184" r="7" fill="rgba(255,255,255,0.7)"/>
+  <path d="M88,200 Q101,192 114,200 L114,210 L88,210 Z" fill="rgba(255,255,255,0.7)"/>
+  <circle cx="124" cy="181" r="9" fill="white"/>
+  <path d="M108,200 Q124,190 140,200 L140,210 L108,210 Z" fill="white"/>
+  <circle cx="134" cy="212" r="11" fill="white"/>
+  <circle cx="134" cy="212" r="7" fill="none" stroke="#0A9B78" stroke-width="1.5"/>
+  <line x1="134" y1="212" x2="134" y2="207" stroke="#0A9B78" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="134" y1="212" x2="138" y2="215" stroke="#0A9B78" stroke-width="1.5" stroke-linecap="round"/>
+
+  <text x="80" y="310" font-family="system-ui,'Apple SD Gothic Neo',sans-serif" font-size="58" font-weight="700" fill="white">모두의 일정을</text>
+  <text x="80" y="382" font-family="system-ui,'Apple SD Gothic Neo',sans-serif" font-size="58" font-weight="700" fill="white">한번에</text>
+  <text x="80" y="432" font-family="system-ui,'Apple SD Gothic Neo',sans-serif" font-size="22" fill="rgba(255,255,255,0.8)">링크 하나로 모두의 가능 시간을 수집하세요</text>
+
+  <rect x="80" y="530" width="390" height="44" rx="22" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+  <text x="275" y="557" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="rgba(255,255,255,0.9)">when2work.whitejbb.cloud</text>
+</svg>
