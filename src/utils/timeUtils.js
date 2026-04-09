@@ -18,11 +18,14 @@ const WEEKDAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
 
 export function formatDateHeader(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
+  const dayOfWeek = d.getDay()
   return {
-    weekday: WEEKDAYS_KO[d.getDay()],
+    weekday: WEEKDAYS_KO[dayOfWeek],
     month: d.getMonth() + 1,
     day: d.getDate(),
-    isWeekend: d.getDay() === 0 || d.getDay() === 6,
+    isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+    isSunday: dayOfWeek === 0,
+    isSaturday: dayOfWeek === 6,
   }
 }
 

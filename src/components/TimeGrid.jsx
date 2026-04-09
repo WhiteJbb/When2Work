@@ -215,24 +215,28 @@ export default function TimeGrid({
         <div className="flex sticky top-0 z-20"
           style={{ background: c.header, borderBottom: `2px solid ${c.hourLine}` }}
         >
-          <div className="w-[70px] flex-shrink-0 sticky left-0 z-10" style={{ background: c.header }}/>
+          <div className="w-[70px] flex-shrink-0 sticky left-0 z-30" style={{ background: c.header }}/>
           {dates.map(d => {
-            const { weekday, month, day, isWeekend } = formatDateHeader(d)
+            const { weekday, month, day, isSunday, isSaturday } = formatDateHeader(d)
+            const textColor = isSunday ? c.weekendText : isSaturday ? '#3b82f6' : c.dayText
             return (
               <div key={d} className="flex-1 min-w-[64px] text-center py-3"
                 style={{ borderLeft: `1.5px solid ${c.colLine}` }}
               >
-                <p className="text-sm font-extrabold" style={{ color: isWeekend ? c.weekendText : c.dayText }}>{weekday}</p>
-                <p className="text-xs mt-0.5 font-semibold" style={{ color: isWeekend ? c.weekendText : c.timeText }}>{month}/{day}</p>
+                <p className="text-sm font-extrabold" style={{ color: textColor }}>{weekday}</p>
+                <p className="text-xs mt-0.5 font-semibold" style={{ color: textColor }}>{month}/{day}</p>
               </div>
             )
           })}
         </div>
 
-        {/* 바디 */}
+        {/* 바디 그리드 */}
         <div className="flex">
           <div className="w-[70px] flex-shrink-0 sticky left-0 z-10"
-            style={{ background: c.timeCol, borderRight: `2px solid ${c.hourLine}` }}
+            style={{ 
+              background: c.timeCol, 
+              borderRight: `2px solid ${c.hourLine}`
+            }}
           >
             {timeSlots.map((time, idx) => (
               <div key={time} className="relative"

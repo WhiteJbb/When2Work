@@ -72,15 +72,41 @@ export default function CreateRoom() {
     previewDates = generateDateRange(form.startDate, form.numDays)
   }
 
-  // 주별로 날짜 그룹화 (7일 이상일 때만)
+  // 주별로 날짜 그룹화 (8일 이상일 때만)
   const groupedByWeek = []
-  if (previewDates.length >= 7) {
-    // 7개씩 묶기
-    for (let i = 0; i < previewDates.length; i += 7) {
-      groupedByWeek.push(previewDates.slice(i, i + 7))
+  if (previewDates.length >= 8) {
+    // 첫 날짜의 요일 확인
+    const firstDate = new Date(previewDates[0] + 'T00:00:00')
+    const firstDayOfWeek = firstDate.getDay() // 0=일, 1=월, ..., 6=토
+    
+    let currentWeek = []
+    
+    // 첫 주의 앞부분을 빈 칸으로 채우기
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      currentWeek.push(null)
+    }
+    
+    // 날짜 배치
+    previewDates.forEach((d) => {
+      currentWeek.push(d)
+      
+      // 토요일이거나 7칸이 차면 다음 주로
+      if (currentWeek.length === 7) {
+        groupedByWeek.push([...currentWeek])
+        currentWeek = []
+      }
+    })
+    
+    // 마지막 주가 남아있으면 추가
+    if (currentWeek.length > 0) {
+      // 마지막 주의 뒷부분을 빈 칸으로 채우기
+      while (currentWeek.length < 7) {
+        currentWeek.push(null)
+      }
+      groupedByWeek.push(currentWeek)
     }
   } else {
-    // 7일 미만이면 한 줄로
+    // 7일 이하면 한 줄로
     if (previewDates.length > 0) {
       groupedByWeek.push(previewDates)
     }
@@ -184,10 +210,17 @@ export default function CreateRoom() {
       {previewDates.length > 0 && (
         <div>
           <label className="label text-xs">선택된 날짜 ({previewDates.length}일)</label>
-          <div className="space-y-2 max-h-32 overflow-y-auto p-2 rounded-xl bg-[#f9f9f9] dark:bg-[#1a1a1f]">
+          <div className="space-y-1.5 overflow-y-auto p-2 rounded-xl bg-[#f9f9f9] dark:bg-[#1a1a1f]"
+            style={{ maxHeight: groupedByWeek.length <= 4 ? 'none' : '280px' }}
+          >
             {groupedByWeek.map((week, weekIdx) => (
-              <div key={weekIdx} className="flex flex-wrap gap-1.5">
-                {week.map(d => {
+              <div key={weekIdx} className="grid grid-cols-7 gap-1">
+                {week.map((d, idx) => {
+                  // 빈 칸 처리
+                  if (!d) {
+                    return <div key={`empty-${weekIdx}-${idx}`} />
+                  }
+                  
                   const date = new Date(d + 'T00:00:00')
                   const days = ['일','월','화','수','목','금','토']
                   const dayOfWeek = date.getDay()
@@ -196,16 +229,16 @@ export default function CreateRoom() {
                   
                   return (
                     <span key={d}
-                      className={`text-xs font-bold px-2.5 py-1 ${
+                      className={`text-[10px] font-bold px-1.5 py-1 text-center ${
                         isSunday
                           ? 'bg-[#fff1f2] dark:bg-[#2d1a1d] text-[#e11d48] border border-[#fecdd3] dark:border-[#4a2028]'
                           : isSaturday
                           ? 'bg-[#eff6ff] dark:bg-[#1e293b] text-[#3b82f6] border border-[#bfdbfe] dark:border-[#334155]'
                           : 'bg-[#edfdf8] dark:bg-[#0f2e2a] text-[#0ecfb0] dark:text-[#0ab8a0] border border-[#a8f2e4] dark:border-[#1a4a44]'
                       }`}
-                      style={{ borderRadius: '999px' }}
+                      style={{ borderRadius: '8px' }}
                     >
-                      {date.getMonth()+1}/{date.getDate()}({days[dayOfWeek]})
+                      {date.getMonth()+1}/{date.getDate()}<br/>({days[dayOfWeek]})
                     </span>
                   )
                 })}
