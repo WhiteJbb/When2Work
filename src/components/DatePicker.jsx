@@ -64,6 +64,9 @@ export default function DatePicker({ value, onChange, minDate }) {
       } else {
         setPosition('left')
       }
+    } else if (isMobile) {
+      // 모바일에서는 항상 left
+      setPosition('left')
     }
   }, [open, isMobile])
 
@@ -142,38 +145,38 @@ export default function DatePicker({ value, onChange, minDate }) {
 
       {/* 달력 팝업 */}
       {open && (
-        <div className={`absolute top-full mt-2 z-50 card shadow-xl p-4 animate-in ${
+        <div className={`absolute top-full mt-2 z-50 card shadow-xl p-3 sm:p-4 animate-in ${
           isMobile 
-            ? 'left-0 right-0' 
+            ? 'left-0 right-0 w-full' 
             : `w-80 ${position === 'right' ? 'right-0' : 'left-0'}`
         }`}>
           {/* 월 네비게이션 */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <button
               type="button"
               onClick={prevMonth}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-1.5 sm:p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
-            <span className="font-semibold text-base">
+            <span className="font-semibold text-sm sm:text-base">
               {viewYear}년 {MONTHS[viewMonth]}
             </span>
             <button
               type="button"
               onClick={nextMonth}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-1.5 sm:p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
           {/* 요일 헤더 */}
-          <div className="grid grid-cols-7 mb-2">
+          <div className="grid grid-cols-7 mb-1.5 sm:mb-2">
             {WEEKDAYS.map((w, i) => (
               <div
                 key={w}
-                className={`text-center text-xs font-semibold py-2
+                className={`text-center text-[10px] sm:text-xs font-semibold py-1 sm:py-2
                   ${i === 0 ? 'text-rose-400' : i === 6 ? 'text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
               >
                 {w}
@@ -182,7 +185,7 @@ export default function DatePicker({ value, onChange, minDate }) {
           </div>
 
           {/* 날짜 격자 */}
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
             {cells.map((day, idx) => {
               const disabled = isDisabled(day)
               const selected_ = isSameDay(day)
@@ -198,7 +201,7 @@ export default function DatePicker({ value, onChange, minDate }) {
                   disabled={disabled || !day}
                   onClick={() => day && handleSelect(day)}
                   className={`
-                    aspect-square rounded-lg text-sm font-semibold transition-colors
+                    aspect-square rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold transition-colors
                     ${!day ? 'invisible' : ''}
                     ${selected_
                       ? 'bg-brand-600 text-white'
@@ -221,7 +224,7 @@ export default function DatePicker({ value, onChange, minDate }) {
           </div>
 
           {/* 오늘 버튼 */}
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={() => {
@@ -229,7 +232,7 @@ export default function DatePicker({ value, onChange, minDate }) {
                 setViewMonth(today.getMonth())
                 handleSelect(today.getDate())
               }}
-              className="w-full py-2.5 rounded-lg text-sm font-semibold
+              className="w-full py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold
                          bg-brand-50 dark:bg-brand-900/20
                          text-brand-600 dark:text-brand-400
                          hover:bg-brand-100 dark:hover:bg-brand-900/40
