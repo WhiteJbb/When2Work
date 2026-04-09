@@ -27,6 +27,7 @@ export default function DatePicker({ value, onChange, minDate }) {
   const [viewMonth, setViewMonth] = useState(selected?.getMonth() ?? today.getMonth())
 
   const containerRef = useRef(null)
+  const [position, setPosition] = useState('left')
 
   // 바깥 클릭 시 닫기
   useEffect(() => {
@@ -37,6 +38,22 @@ export default function DatePicker({ value, onChange, minDate }) {
     }
     if (open) document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  // 캘린더 위치 조정
+  useEffect(() => {
+    if (open && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      const calendarWidth = 288 // w-72 = 18rem = 288px
+      const spaceRight = window.innerWidth - rect.right
+      
+      // 오른쪽 공간이 부족하면 right 정렬
+      if (spaceRight < calendarWidth && rect.left > calendarWidth) {
+        setPosition('right')
+      } else {
+        setPosition('left')
+      }
+    }
   }, [open])
 
   function prevMonth() {
@@ -114,8 +131,9 @@ export default function DatePicker({ value, onChange, minDate }) {
 
       {/* 달력 팝업 */}
       {open && (
-        <div className="absolute top-full left-0 mt-2 z-50 w-72
-                        card shadow-xl p-4 animate-in">
+        <div className={`absolute top-full mt-2 z-50 w-72 card shadow-xl p-4 animate-in ${
+          position === 'right' ? 'right-0' : 'left-0'
+        }`}>
           {/* 월 네비게이션 */}
           <div className="flex items-center justify-between mb-3">
             <button
