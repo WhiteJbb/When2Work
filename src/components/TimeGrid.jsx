@@ -43,35 +43,27 @@ export default function TimeGrid({
   function applyTo(clientX, clientY) {
     const pos = getPosFromPoint(clientX, clientY)
     if (!pos) return
-    const prev = lastPosRef.current
     const start = startPosRef.current
-    const ids = []
     
-    // Shift 키를 누르고 있으면 범위 선택 모드
-    if (start && (window.event?.shiftKey || isDragging.current)) {
-      // 시작점과 현재점 사이의 모든 셀 선택
-      const dateStartIdx = dates.indexOf(start.dateStr)
-      const dateEndIdx = dates.indexOf(pos.dateStr)
-      const rowStart = start.rowIdx
-      const rowEnd = pos.rowIdx
-      
-      const minDateIdx = Math.min(dateStartIdx, dateEndIdx)
-      const maxDateIdx = Math.max(dateStartIdx, dateEndIdx)
-      const minRow = Math.min(rowStart, rowEnd)
-      const maxRow = Math.max(rowStart, rowEnd)
-      
-      // 사각형 영역의 모든 셀 추가
-      for (let d = minDateIdx; d <= maxDateIdx; d++) {
-        for (let r = minRow; r <= maxRow; r++) {
-          ids.push(slotId(dates[d], timeSlots[r]))
-        }
+    if (!start) return
+    
+    // 시작점과 현재점 사이의 모든 셀 선택 (사각형 영역)
+    const dateStartIdx = dates.indexOf(start.dateStr)
+    const dateEndIdx = dates.indexOf(pos.dateStr)
+    const rowStart = start.rowIdx
+    const rowEnd = pos.rowIdx
+    
+    const minDateIdx = Math.min(dateStartIdx, dateEndIdx)
+    const maxDateIdx = Math.max(dateStartIdx, dateEndIdx)
+    const minRow = Math.min(rowStart, rowEnd)
+    const maxRow = Math.max(rowStart, rowEnd)
+    
+    const ids = []
+    // 사각형 영역의 모든 셀 추가
+    for (let d = minDateIdx; d <= maxDateIdx; d++) {
+      for (let r = minRow; r <= maxRow; r++) {
+        ids.push(slotId(dates[d], timeSlots[r]))
       }
-    } else if (prev?.dateStr === pos.dateStr) {
-      // 같은 날짜 내에서 세로 드래그
-      for (let r = Math.min(prev.rowIdx, pos.rowIdx); r <= Math.max(prev.rowIdx, pos.rowIdx); r++)
-        ids.push(slotId(pos.dateStr, timeSlots[r]))
-    } else {
-      ids.push(slotId(pos.dateStr, timeSlots[pos.rowIdx]))
     }
     
     onSelectionChange(prev => {
@@ -100,7 +92,11 @@ export default function TimeGrid({
 
   const handleMouseMove = useCallback((e) => {
     if (mode !== 'select' || !isDragging.current) return
-    applyTo(e.clientX, e.clientY)
+    
+    // 마우스가 움직였을 때만 범위 선택 적용
+    if (lastPosRef.current) {
+      applyTo(e.clientX, e.clientY)
+    }
     
     // 자동 스크롤
     if (containerRef.current) {
@@ -145,7 +141,11 @@ export default function TimeGrid({
     if (mode !== 'select' || !isDragging.current) return
     e.preventDefault()
     const touch = e.touches[0]
-    applyTo(touch.clientX, touch.clientY)
+    
+    // 터치가 움직였을 때만 범위 선택 적용
+    if (lastPosRef.current) {
+      applyTo(touch.clientX, touch.clientY)
+    }
     
     // 터치 자동 스크롤
     if (containerRef.current) {
@@ -212,10 +212,10 @@ export default function TimeGrid({
         style={{ minWidth: `${dates.length*64+70}px` }}
       >
         {/* 헤더 */}
-        <div className="flex sticky top-0 z-10"
+        <div className="flex sticky top-0 z-20"
           style={{ background: c.header, borderBottom: `2px solid ${c.hourLine}` }}
         >
-          <div className="w-[70px] flex-shrink-0"/>
+          <div className="w-[70px] flex-shrink-0 sticky left-0 z-10" style={{ background: c.header }}/>
           {dates.map(d => {
             const { weekday, month, day, isWeekend } = formatDateHeader(d)
             return (
@@ -231,7 +231,7 @@ export default function TimeGrid({
 
         {/* 바디 */}
         <div className="flex">
-          <div className="w-[70px] flex-shrink-0"
+          <div className="w-[70px] flex-shrink-0 sticky left-0 z-10"
             style={{ background: c.timeCol, borderRight: `2px solid ${c.hourLine}` }}
           >
             {timeSlots.map((time, idx) => (

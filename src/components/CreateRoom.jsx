@@ -75,25 +75,10 @@ export default function CreateRoom() {
   // 주별로 날짜 그룹화 (7일 이상일 때만)
   const groupedByWeek = []
   if (previewDates.length >= 7) {
-    let currentWeek = []
-    previewDates.forEach((d, i) => {
-      const date = new Date(d + 'T00:00:00')
-      
-      // 첫 날짜이거나 일요일이면 새 주 시작
-      if (i === 0 || date.getDay() === 0) {
-        if (currentWeek.length > 0) {
-          groupedByWeek.push([...currentWeek])
-        }
-        currentWeek = [d]
-      } else {
-        currentWeek.push(d)
-      }
-      
-      // 마지막 날짜면 현재 주 추가
-      if (i === previewDates.length - 1) {
-        groupedByWeek.push([...currentWeek])
-      }
-    })
+    // 7개씩 묶기
+    for (let i = 0; i < previewDates.length; i += 7) {
+      groupedByWeek.push(previewDates.slice(i, i + 7))
+    }
   } else {
     // 7일 미만이면 한 줄로
     if (previewDates.length > 0) {

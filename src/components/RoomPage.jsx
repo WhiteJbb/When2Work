@@ -15,7 +15,11 @@ export default function RoomPage() {
   const [availabilities, setAvailabilities] = useState([])
   const [avLoading, setAvLoading] = useState(false)
   const [name, setName] = useState(() => localStorage.getItem('w2w-name') || '')
-  const [selected, setSelected] = useState(new Set())
+  const [selected, setSelected] = useState(() => {
+    // localStorage에서 이 방의 선택 데이터 불러오기
+    const saved = localStorage.getItem(`w2w-selected-${id}`)
+    return saved ? new Set(JSON.parse(saved)) : new Set()
+  })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
@@ -41,6 +45,13 @@ export default function RoomPage() {
       setShowTutorial(true)
     }
   }, [loading, room])
+
+  // 선택 상태를 localStorage에 저장
+  useEffect(() => {
+    if (id && selected.size > 0) {
+      localStorage.setItem(`w2w-selected-${id}`, JSON.stringify([...selected]))
+    }
+  }, [id, selected])
 
   const loadAvailabilities = useCallback(async () => {
     if (!id) return
@@ -241,12 +252,8 @@ export default function RoomPage() {
                 <div className="flex-1 pt-0.5">
                   <p className="font-extrabold text-sm mb-1 text-[#111] dark:text-[#e4e4e7]">드래그로 시간 선택</p>
                   <p className="text-xs font-medium text-[#888]">
-                    타임 그리드에서 마우스를 드래그하거나 터치하여 가능한 시간대를 선택하세요. 
-                    30분 단위로 선택할 수 있어요.
-                  </p>
-                  <p className="text-xs font-bold mt-1.5 px-2 py-1 rounded-lg inline-block"
-                    style={{ background: 'rgba(14,207,176,0.1)', color: '#0ecfb0' }}>
-                    💡 Shift 키를 누른 채 드래그하면 사각형 영역을 한번에 선택할 수 있어요!
+                    타임 그리드에서 시작점을 클릭하고 끝점까지 드래그하세요. 
+                    사각형 영역의 모든 시간이 선택됩니다. (30분 단위)
                   </p>
                 </div>
               </div>
@@ -346,14 +353,13 @@ export default function RoomPage() {
 
           <div className="flex items-center justify-between px-1">
             <p className="text-xs font-semibold" style={{ color:'#bbb' }}>
-              드래그하여 가능한 시간을 선택하세요 
-              <span className="ml-2 px-2 py-0.5 rounded-md text-[10px]" 
-                style={{ background: 'rgba(14,207,176,0.1)', color: '#0ecfb0' }}>
-                💡 Shift 누르고 드래그하면 사각형 영역 선택
-              </span>
+              드래그하여 가능한 시간을 선택하세요
             </p>
             {selected.size > 0 && (
-              <button onClick={() => setSelected(new Set())} className="btn-secondary text-xs py-1.5 px-3">
+              <button onClick={() => {
+                setSelected(new Set())
+                localStorage.removeItem(`w2w-selected-${id}`)
+              }} className="btn-secondary text-xs py-1.5 px-3">
                 <RefreshCw className="w-3 h-3"/> 초기화
               </button>
             )}
