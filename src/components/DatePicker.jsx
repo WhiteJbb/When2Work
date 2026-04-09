@@ -55,7 +55,7 @@ export default function DatePicker({ value, onChange, minDate }) {
   useEffect(() => {
     if (open && containerRef.current && !isMobile) {
       const rect = containerRef.current.getBoundingClientRect()
-      const calendarWidth = 288 // w-72 = 18rem = 288px
+      const calendarWidth = 320 // w-80 = 20rem = 320px
       const spaceRight = window.innerWidth - rect.right
       
       // 오른쪽 공간이 부족하면 right 정렬
@@ -144,36 +144,36 @@ export default function DatePicker({ value, onChange, minDate }) {
       {open && (
         <div className={`absolute top-full mt-2 z-50 card shadow-xl p-4 animate-in ${
           isMobile 
-            ? 'left-0 right-0 w-full' 
-            : `w-72 ${position === 'right' ? 'right-0' : 'left-0'}`
+            ? 'left-0 right-0' 
+            : `w-80 ${position === 'right' ? 'right-0' : 'left-0'}`
         }`}>
           {/* 월 네비게이션 */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <button
               type="button"
               onClick={prevMonth}
-              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="font-semibold text-sm">
+            <span className="font-semibold text-base">
               {viewYear}년 {MONTHS[viewMonth]}
             </span>
             <button
               type="button"
               onClick={nextMonth}
-              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
 
           {/* 요일 헤더 */}
-          <div className="grid grid-cols-7 mb-1">
+          <div className="grid grid-cols-7 mb-2">
             {WEEKDAYS.map((w, i) => (
               <div
                 key={w}
-                className={`text-center text-[11px] font-medium py-1
+                className={`text-center text-xs font-semibold py-2
                   ${i === 0 ? 'text-rose-400' : i === 6 ? 'text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
               >
                 {w}
@@ -182,7 +182,7 @@ export default function DatePicker({ value, onChange, minDate }) {
           </div>
 
           {/* 날짜 격자 */}
-          <div className="grid grid-cols-7 gap-y-0.5">
+          <div className="grid grid-cols-7 gap-1">
             {cells.map((day, idx) => {
               const disabled = isDisabled(day)
               const selected_ = isSameDay(day)
@@ -198,7 +198,7 @@ export default function DatePicker({ value, onChange, minDate }) {
                   disabled={disabled || !day}
                   onClick={() => day && handleSelect(day)}
                   className={`
-                    h-8 w-full rounded-lg text-sm font-medium transition-colors
+                    aspect-square rounded-lg text-sm font-semibold transition-colors
                     ${!day ? 'invisible' : ''}
                     ${selected_
                       ? 'bg-brand-600 text-white'
@@ -221,7 +221,7 @@ export default function DatePicker({ value, onChange, minDate }) {
           </div>
 
           {/* 오늘 버튼 */}
-          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={() => {
@@ -229,7 +229,7 @@ export default function DatePicker({ value, onChange, minDate }) {
                 setViewMonth(today.getMonth())
                 handleSelect(today.getDate())
               }}
-              className="w-full py-1.5 rounded-lg text-xs font-semibold
+              className="w-full py-2.5 rounded-lg text-sm font-semibold
                          bg-brand-50 dark:bg-brand-900/20
                          text-brand-600 dark:text-brand-400
                          hover:bg-brand-100 dark:hover:bg-brand-900/40
